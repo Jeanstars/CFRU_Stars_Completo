@@ -1,0 +1,370 @@
+diff --git a/include/constants/flags.h b/include/constants/flags.h
+index 86199e0..77c937b 100644
+--- a/include/constants/flags.h
++++ b/include/constants/flags.h
+@@ -670,8 +670,7 @@
+ #define FLAG_SILPH_9F_DOOR_4                             0x28B
+ #define FLAG_SILPH_10F_DOOR                              0x28C
+ #define FLAG_SILPH_11F_DOOR                              0x28D
+-#define FLAG_0x28E                                       0x28E
+-#define FLAG_0x28F                                       0x28F
++//FLAG_0x28E e FLAG_0x28F foram "adotadas" como FLAG_RANDOM_TRAINER_POOL e FLAG_RANDOM_GIVEMON_POOL - ver src/config.h
+ #define FLAG_MET_STICKER_LADY                            0x290
+ #define FLAG_PALLET_LADY_NOT_BLOCKING_SIGN               0x291
+ #define FLAG_GOT_VS_SEEKER                               0x292
+@@ -1013,12 +1012,10 @@
+ #define FLAG_0x3DE               0x3DE
+ #define FLAG_0x3DF               0x3DF
+ #define FLAG_0x3E0               0x3E0
+-#define FLAG_0x3E1               0x3E1
+-#define FLAG_0x3E2               0x3E2
+-#define FLAG_0x3E3               0x3E3
+-#define FLAG_0x3E4               0x3E4
+-#define FLAG_0x3E5               0x3E5
+-#define FLAG_0x3E6               0x3E6
++//FLAG_0x3E1 a FLAG_0x3E6 foram "adotadas" pelas novas flags de gameplay - ver src/config.h:
++// FLAG_MATCH_HIGHEST_TRAINER_LEVEL (0x3E1), FLAG_TRAINER_QUINTUPLE_STATS (0x3E2),
++// FLAG_RANDOM_TRAINER_TEAM (0x3E3), FLAG_DISABLE_EXP_GAIN (0x3E4),
++// FLAG_HARDCORE_TRAINER_AI (0x3E5), FLAG_WILD_TRIPLE_DEFENSES (0x3E6)
+ #define FLAG_0x3E7               0x3E7
+ */
+ 
+diff --git a/include/new/build_pokemon_2.h b/include/new/build_pokemon_2.h
+index d1ac9c4..ee5c6d7 100644
+--- a/include/new/build_pokemon_2.h
++++ b/include/new/build_pokemon_2.h
+@@ -9,6 +9,23 @@
+  *		  several macros and constants for building Pokemon.
+  */
+ 
++#ifdef FLAG_MATCH_HIGHEST_TRAINER_LEVEL
++#define IF_FLAG_MATCH_HIGHEST_TRAINER_LEVEL(structure)																										\
++	if (side == B_SIDE_OPPONENT && FlagGet(FLAG_MATCH_HIGHEST_TRAINER_LEVEL))																					\
++	{																																						\
++		u8 matchHighestPlayerLevel = GetHighestMonLevel(gPlayerParty);																							\
++		if (structure[i].lvl >= matchLevelOrigMax) /* This is (one of) the Trainer's strongest Pokemon */														\
++			lvl = matchHighestPlayerLevel;																														\
++		else /* Rest of the team sits 2-3 levels below the ace */																								\
++		{																																						\
++			u8 gap = 2 + (Random() & 1);																														\
++			lvl = (matchHighestPlayerLevel > gap) ? (matchHighestPlayerLevel - gap) : 1;																			\
++		}																																						\
++	}
++#else
++#define IF_FLAG_MATCH_HIGHEST_TRAINER_LEVEL(structure)
++#endif
++
+ #define MAKE_POKEMON(structure)																																\
+ {																																							\
+ 	u16 speciesToCreate = TryReplaceNormalTrainerSpecies(structure[i].species, trainerId);																	\
+@@ -30,6 +47,9 @@
+ 			ModifySpeciesAndLevelForGenericBattle(&speciesToCreate, &lvl, minPartyLevel, highestPlayerLevel, modifiedAveragePlayerLevel, trainer->partyFlags, trainer->partySize, canEvolveMon);	\
+ 	}																																						\
+ 																																							\
++	/* FLAG_MATCH_HIGHEST_TRAINER_LEVEL: this Trainer's ace matches the player's strongest level, rest are 2-3 below it */								\
++	IF_FLAG_MATCH_HIGHEST_TRAINER_LEVEL(structure)																											\
++																																							\
+ 	CreateMon(&party[i], speciesToCreate, lvl, baseIV, TRUE, personalityValue, otIdType, otid);																\
+ 	TryFixMiniorForm(&party[i]);																															\
+ 	party[i].metLevel = structure[i].lvl;																													\
+diff --git a/src/Battle_AI/ai_master.c b/src/Battle_AI/ai_master.c
+index 6ac9bbd..0707014 100644
+--- a/src/Battle_AI/ai_master.c
++++ b/src/Battle_AI/ai_master.c
+@@ -230,6 +230,11 @@ u32 GetAIFlags(void)
+ 	if (!(gBattleTypeFlags & BATTLE_TYPE_TRAINER) && gBattleTypeFlags & BATTLE_TYPE_INGAME_PARTNER)
+ 		flags |= AI_SCRIPT_CHECK_BAD_MOVE; //Partners in wild double battles are like normal trainers
+ 
++	#ifdef FLAG_HARDCORE_TRAINER_AI
++	if (FlagGet(FLAG_HARDCORE_TRAINER_AI) && (gBattleTypeFlags & BATTLE_TYPE_TRAINER))
++		flags |= AI_SCRIPT_CHECK_BAD_MOVE | AI_SCRIPT_CHECK_GOOD_MOVE; //Force the game's smartest move-choice logic on top of whatever switching flags this Trainer already had
++	#endif
++
+ 	return flags;
+ }
+ 
+diff --git a/src/build_pokemon.c b/src/build_pokemon.c
+index ef619b2..b517b40 100644
+--- a/src/build_pokemon.c
++++ b/src/build_pokemon.c
+@@ -44,6 +44,8 @@
+ #include "Tables/raid_encounters.h"
+ #include "Tables/raid_partners.h"
+ #include "Tables/trainers_with_evs_table.h"
++#include "Tables/random_trainer_pool.h" //gRandomTrainerSpeciesPool - FLAG_RANDOM_TRAINER_TEAM
++#include "../include/new/random_trainer_pool_full.h" //gRandomTrainerPool - FLAG_RANDOM_TRAINER_POOL / FLAG_RANDOM_GIVEMON_POOL
+ 
+ /*
+ build_pokemon.c
+@@ -170,6 +172,9 @@ static void ModifySpeciesAndLevelForBossBattle(unusedArg u16* species, unusedArg
+ static void GiveMon2BestBaseStatEVs(struct Pokemon* mon);
+ #endif
+ static u16 TryReplaceNormalTrainerSpecies(u16 species, unusedArg u16 trainerId);
++#ifdef FLAG_RANDOM_TRAINER_POOL
++static void ApplyRandomTrainerPoolToMon(struct Pokemon* mon);
++#endif
+ static u8 BuildFrontierParty(struct Pokemon* const party, const u16 trainerNum, const u8 tier, const bool8 firstTrainer, const bool8 forPlayer, const u8 side);
+ static void BuildFrontierMultiParty(u8 multiId);
+ static void BuildRaidMultiParty(void);
+@@ -765,6 +770,9 @@ static u8 CreateNPCTrainerParty(struct Pokemon* const party, const u16 trainerId
+ 	u32 i, j, nameHash;
+ 	unusedArg u8 monsCount, baseIV, setMonGender, trainerNameLengthOddness, minPartyLevel, maxPartyLevel,
+ 	   modifiedAveragePlayerLevel, highestPlayerLevel, canEvolveMon, canEvolveMonBackup, levelScaling, setCustomMoves;
++	#ifdef FLAG_MATCH_HIGHEST_TRAINER_LEVEL
++	u8 matchLevelOrigMax = 0; //Highest ORIGINAL level in this Trainer's party (their "ace"), used by FLAG_MATCH_HIGHEST_TRAINER_LEVEL
++	#endif
+ 
+ 	const struct Trainer* trainer;
+ 	u32 otid = 0;
+@@ -916,6 +924,35 @@ static u8 CreateNPCTrainerParty(struct Pokemon* const party, const u16 trainerId
+ 		setCustomMoves = TRUE;
+ 		#endif
+ 
++		#ifdef FLAG_MATCH_HIGHEST_TRAINER_LEVEL
++		//Find this Trainer's originally-strongest (highest level) Pokemon, so we know which
++		//mon should be treated as their "ace" when FLAG_MATCH_HIGHEST_TRAINER_LEVEL is active
++		if (side == B_SIDE_OPPONENT && FlagGet(FLAG_MATCH_HIGHEST_TRAINER_LEVEL))
++		{
++			for (i = 0; i < monsCount; ++i)
++			{
++				u8 origLvl;
++				switch (trainer->partyFlags) {
++					case PARTY_FLAG_CUSTOM_MOVES:
++						origLvl = trainer->party.NoItemCustomMoves[i].lvl;
++						break;
++					case PARTY_FLAG_HAS_ITEM:
++						origLvl = trainer->party.ItemDefaultMoves[i].lvl;
++						break;
++					case PARTY_FLAG_CUSTOM_MOVES | PARTY_FLAG_HAS_ITEM:
++						origLvl = trainer->party.ItemCustomMoves[i].lvl;
++						break;
++					default:
++						origLvl = trainer->party.NoItemDefaultMoves[i].lvl;
++						break;
++				}
++
++				if (origLvl > matchLevelOrigMax)
++					matchLevelOrigMax = origLvl;
++			}
++		}
++		#endif
++
+ 		//Create each Pokemon
+ 		for (i = 0, trainerNameLengthOddness = StringLength(trainer->trainerName) & 1, nameHash = 0; i < monsCount; ++i)
+ 		{
+@@ -1208,6 +1245,24 @@ static u8 CreateNPCTrainerParty(struct Pokemon* const party, const u16 trainerId
+ 			CalculateMonStatsNew(mon);
+ 			HealMon(mon);
+ 
++			#ifdef FLAG_RANDOM_TRAINER_POOL
++			//Fully overwrite this mon (species/moves/item/nature) with a random entry from gRandomTrainerPool
++			if (side == B_SIDE_OPPONENT && FlagGet(FLAG_RANDOM_TRAINER_POOL))
++			{
++				ApplyRandomTrainerPoolToMon(mon);
++			}
++			#endif
++
++			#ifdef FLAG_TRAINER_QUINTUPLE_STATS
++			//Multiply this Trainer's mon's Attack/Sp. Attack/Speed by 5x for this battle
++			if (side == B_SIDE_OPPONENT && FlagGet(FLAG_TRAINER_QUINTUPLE_STATS))
++			{
++				mon->attack = MathMin(0xFFFF, mon->attack * 5);
++				mon->spAttack = MathMin(0xFFFF, mon->spAttack * 5);
++				mon->speed = MathMin(0xFFFF, mon->speed * 5);
++			}
++			#endif
++
+ 			//Status Inducers
+ 			TryStatusInducer(mon);
+ 			#ifdef UNBOUND
+@@ -1649,8 +1704,95 @@ static void GiveMon2BestBaseStatEVs(struct Pokemon* mon)
+ }
+ #endif
+ 
++#ifdef FLAG_RANDOM_TRAINER_POOL
++//Used by FLAG_RANDOM_TRAINER_POOL and FLAG_RANDOM_GIVEMON_POOL.
++//Fully overwrites species/moves/held item/nature on an already-created mon using a
++//random entry from gRandomTrainerPool (include/new/random_trainer_pool_full.h),
++//then recalculates its stats and heals it back to full.
++static void ApplyRandomTrainerPoolToMon(struct Pokemon* mon)
++{
++	const struct RandomTrainerPoolMon* entry = &gRandomTrainerPool[Random() % NELEMS(gRandomTrainerPool)];
++	u8 speciesName[POKEMON_NAME_LENGTH + 1];
++	u8 j;
++
++	SetMonData(mon, MON_DATA_SPECIES, &entry->species);
++	SetMonData(mon, MON_DATA_HELD_ITEM, &entry->item);
++
++	//Fix nickname - CreateMon already baked in the ORIGINAL Trainer species' name as
++	//the nickname, and changing MON_DATA_SPECIES above doesn't update that text on its own
++	GetSpeciesName(speciesName, entry->species);
++	SetMonData(mon, MON_DATA_NICKNAME, speciesName);
++
++	//Fix teraType - it was already rolled earlier in CreateNPCTrainerParty based on the
++	//ORIGINAL Trainer species' typing, so re-roll it now based on this mon's NEW typing
++	{
++		u8 type1 = gBaseStats[entry->species].type1;
++		u8 type2 = gBaseStats[entry->species].type2;
++
++		if (Random() % 100 < 2) //2% chance to get a fully random teraType, same odds used above
++			mon->teraType = GetRandomTeraType();
++		else if (type1 == type2 || type2 == TYPE_MYSTERY || type2 == TYPE_BLANK)
++			mon->teraType = type1;
++		else
++			mon->teraType = (Random() & 1) ? type1 : type2;
++	}
++
++	for (j = 0; j < MAX_MON_MOVES; ++j)
++	{
++		mon->moves[j] = entry->moves[j];
++		mon->pp[j] = GetTrainerMonMovePP(entry->moves[j], j);
++	}
++	mon->ppBonuses = GetTrainerMonMovePPBonus();
++
++	//Random ability slot (0 or 1); GiveMonNatureAndAbility re-rolls personality until it matches the requested nature
++	GiveMonNatureAndAbility(mon, entry->nature, Random() % 2, IsMonShiny(mon), FALSE, FALSE);
++
++	CalculateMonStatsNew(mon);
++	HealMon(mon);
++}
++#endif
++
+ static u16 TryReplaceNormalTrainerSpecies(u16 species, unusedArg u16 trainerId)
+ {
++	#ifdef FLAG_RANDOM_TRAINER_TEAM
++	if (FlagGet(FLAG_RANDOM_TRAINER_TEAM))
++	{
++		//Picks a random, non-repeating (within the same Trainer's team) species from
++		//gRandomTrainerSpeciesPool (src/Tables/random_trainer_pool.h). Level/item/moves
++		//for this slot are untouched - only the species set here changes.
++		static u16 sLastRandomTeamTrainerId = 0xFFFF;
++		static u16 sUsedRandomSpecies[PARTY_SIZE];
++		static u8 sUsedRandomSpeciesCount;
++		u16 newSpecies;
++		u8 tries, k;
++
++		if (trainerId != sLastRandomTeamTrainerId)
++		{
++			sLastRandomTeamTrainerId = trainerId;
++			sUsedRandomSpeciesCount = 0;
++		}
++
++		for (tries = 0; tries < 50; ++tries) //50 tries is plenty given the pool has hundreds of species
++		{
++			newSpecies = gRandomTrainerSpeciesPool[Random() % NELEMS(gRandomTrainerSpeciesPool)];
++
++			for (k = 0; k < sUsedRandomSpeciesCount; ++k)
++			{
++				if (sUsedRandomSpecies[k] == newSpecies)
++					break;
++			}
++
++			if (k == sUsedRandomSpeciesCount) //Wasn't already used on this team
++				break;
++		}
++
++		if (sUsedRandomSpeciesCount < PARTY_SIZE)
++			sUsedRandomSpecies[sUsedRandomSpeciesCount++] = newSpecies;
++
++		return newSpecies;
++	}
++	#endif
++
+ 	#ifdef UNBOUND
+ 	extern u16 TryReplaceUnboundNormalTrainerSpecies(u16 species, u16 trainerId);
+ 	return TryReplaceUnboundNormalTrainerSpecies(species, trainerId);
+@@ -4136,9 +4278,38 @@ u8 ScriptGiveMon(u16 species, u8 level, u16 item, unusedArg u32 unused1, unusedA
+ 	u8 sentToPc;
+ 	struct Pokemon mon;
+ 
++	#ifdef FLAG_RANDOM_GIVEMON_POOL
++	//Replace the species/item that were about to be given with a random entry from gRandomTrainerPool.
++	//Level is kept as originally scripted; moves/nature are set below, same as FLAG_RANDOM_TRAINER_POOL.
++	bool8 useRandomGivemonEntry = FlagGet(FLAG_RANDOM_GIVEMON_POOL);
++	const struct RandomTrainerPoolMon* randomGivemonEntry = NULL;
++	if (useRandomGivemonEntry)
++	{
++		randomGivemonEntry = &gRandomTrainerPool[Random() % NELEMS(gRandomTrainerPool)];
++		species = randomGivemonEntry->species;
++		item = randomGivemonEntry->item;
++	}
++	#endif
++
+ 	CreateMon(&mon, species, level, 32, 0, 0, 0, 0);
+ 	SetMonData(&mon, MON_DATA_HELD_ITEM, &item);
+ 
++	#ifdef FLAG_RANDOM_GIVEMON_POOL
++	if (useRandomGivemonEntry)
++	{
++		u8 j;
++		for (j = 0; j < MAX_MON_MOVES; ++j)
++		{
++			mon.moves[j] = randomGivemonEntry->moves[j];
++			mon.pp[j] = GetTrainerMonMovePP(randomGivemonEntry->moves[j], j);
++		}
++		mon.ppBonuses = GetTrainerMonMovePPBonus();
++
++		GiveMonNatureAndAbility(&mon, randomGivemonEntry->nature, GetMonData(&mon, MON_DATA_PERSONALITY, NULL) & 1, IsMonShiny(&mon), FALSE, FALSE);
++		CalculateMonStatsNew(&mon);
++	}
++	#endif
++
+ 	#ifdef GIVEPOKEMON_BALL_HACK
+ 	if (ballType != 0)
+ 		mon.pokeball = ballType;
+diff --git a/src/config.h b/src/config.h
+index 90399c3..d18df68 100644
+--- a/src/config.h
++++ b/src/config.h
+@@ -68,6 +68,17 @@
+ #define FLAG_FOLLOWER_IGNORE_ACTIVE_SCRIPT 0x926 //If set, the follower will reappear and move even when a script is in progress
+ #define FLAG_KEEP_CONSUMABLE_ITEMS 0x927 //If set, consumable items are returned after battles
+ #define FLAG_UNLOCKED_DEXNAV_HELD_ITEMS 0x92A //If set, possible held items will be displayed for wild Pokemon on the DexNav UI
++
++//Custom difficulty/randomizer flags added on top of CFRU-expansion. Comment any line out to fully remove that feature.
++#define FLAG_RANDOM_TRAINER_POOL 0x28E //If this flag is set, every opposing Trainer's Pokemon (species, moves, held item and nature) is replaced with a random entry drawn from gRandomTrainerPool (include/new/random_trainer_pool_full.h). Independent from FLAG_RANDOM_TRAINER_TEAM below - the two can be used separately.
++#define FLAG_RANDOM_GIVEMON_POOL 0x28F //If this flag is set, any Pokemon given to the player via the "givepokemon" script command (ScriptGiveMon) is replaced with a random entry (species, moves, held item, nature) from gRandomTrainerPool, same pool used by FLAG_RANDOM_TRAINER_POOL.
++#define FLAG_MATCH_HIGHEST_TRAINER_LEVEL 0x3E1 //If this flag is set, the enemy Trainer's strongest Pokemon (highest originally-set level) will always match the level of the player's strongest Pokemon, while the rest of that Trainer's team will be set 2-3 levels below it
++#define FLAG_TRAINER_QUINTUPLE_STATS 0x3E2 //If this flag is set, the opposing Trainer's Pokemon have their Attack, Sp. Attack, and Speed multiplied by 5x for that battle
++#define FLAG_RANDOM_TRAINER_TEAM 0x3E3 //If this flag is set, the opposing Trainer's team is replaced with random, non-repeating Pokemon drawn from the pool in src/Tables/random_trainer_pool.h (levels/items/moves are kept as originally set for that Trainer)
++#define FLAG_DISABLE_EXP_GAIN 0x3E4 //If this flag is set, the player's Pokemon won't gain any Exp. Points from battles
++#define FLAG_HARDCORE_TRAINER_AI 0x3E5 //If this flag is set, every Trainer battle uses the game's smartest AI move-selection logic (normally reserved for Gym Leaders/E4/Champion), on top of the AI's usual switching logic that already tries to counter and knock out your Pokemon
++#define FLAG_WILD_TRIPLE_DEFENSES 0x3E6 //If this flag is set, wild Pokemon have their Defense and Sp. Defense multiplied by 3x for that battle
++
+ #define FLAG_DAILY_EVENTS_START 0xE00 //To flag + 0xFF, resets every new day.
+ 
+ /*===== Start Menu/Poketools Flags =====*/
+diff --git a/src/exp.c b/src/exp.c
+index 2e732ec..1c6553f 100644
+--- a/src/exp.c
++++ b/src/exp.c
+@@ -128,6 +128,9 @@ void atk23_getexp(void)
+ 		if (SIDE(gBankFainted) != B_SIDE_OPPONENT
+ 		|| gBattleStruct->givenExpMons & gBitTable[gBattlerPartyIndexes[gBankFainted]]
+ 		|| IsFrontierRaidBattle()
++		#ifdef FLAG_DISABLE_EXP_GAIN
++		|| FlagGet(FLAG_DISABLE_EXP_GAIN)
++		#endif
+ 		|| (gBattleTypeFlags &
+ 			 (BATTLE_TYPE_LINK
+ 			  | BATTLE_TYPE_SAFARI
+diff --git a/src/wild_encounter.c b/src/wild_encounter.c
+index 2565bba..1e777a2 100644
+--- a/src/wild_encounter.c
++++ b/src/wild_encounter.c
+@@ -406,6 +406,15 @@ void CreateWildMon(u16 species, u8 level, u8 monHeaderIndex, bool8 purgeParty)
+ 
+ 	//Status Inducers
+ 	TryStatusInducer(&gEnemyParty[enemyMonIndex]);
++
++	#ifdef FLAG_WILD_TRIPLE_DEFENSES
++	//Multiply this wild mon's Defense/Sp. Defense by 3x for this battle
++	if (FlagGet(FLAG_WILD_TRIPLE_DEFENSES))
++	{
++		gEnemyParty[enemyMonIndex].defense = MathMin(0xFFFF, gEnemyParty[enemyMonIndex].defense * 3);
++		gEnemyParty[enemyMonIndex].spDefense = MathMin(0xFFFF, gEnemyParty[enemyMonIndex].spDefense * 3);
++	}
++	#endif
+ }
+ 
+ void sp117_CreateRaidMon(void)

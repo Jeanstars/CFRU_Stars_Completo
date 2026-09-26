@@ -1,0 +1,32 @@
+COMO INSTALAR
+=============
+
+Este pacote tem 9 arquivos, cada um na mesma pasta relativa que ele ocupa
+dentro do repositorio CFRU-expansion. Basta copiar cada arquivo para o
+mesmo caminho no seu projeto, SUBSTITUINDO o que ja existe (exceto os dois
+marcados como "NOVO", que nao existem no seu projeto ainda).
+
+  src/config.h                              -> substitui
+  include/constants/flags.h                 -> substitui
+  src/build_pokemon.c                       -> substitui
+  include/new/build_pokemon_2.h             -> substitui
+  src/exp.c                                 -> substitui
+  src/Battle_AI/ai_master.c                 -> substitui
+  src/wild_encounter.c                      -> substitui
+  src/Tables/random_trainer_pool.h          -> NOVO (nao existia)
+  include/new/random_trainer_pool_full.h    -> NOVO (nao existia)
+
+Se voce ja tinha modificado algum desses 7 arquivos "substitui" com outras
+coisas suas, NAO cole por cima direto - abra o arquivo "mudancas.diff"
+(formato diff/patch padrao do git) e aplique so os trechos novos manualmente,
+ou use `git apply mudancas.diff` dentro do seu clone do repositorio.
+
+Depois de colar os arquivos, recompile o ROM normalmente (o processo de
+build do CFRU-expansion que voce ja usa). Nenhuma flag fica ativa por
+padrao - voce ativa cada uma via script com `setflag FLAG_NOME_DA_FLAG`
+(ou o comando equivalente que voce usa pra testar/ativar flags no jogo).
+
+Se quiser desativar alguma dessas 8 mecanicas por completo (nem compilar o
+codigo dela), abra src/config.h, ache a secao "Custom difficulty/randomizer
+flags added on top of CFRU-expansion" perto do fim do bloco de flags, e
+comente a linha #define daquela flag especifica.

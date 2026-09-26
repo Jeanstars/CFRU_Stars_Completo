@@ -1,0 +1,94 @@
+#org @DESC_CHAR_SWAP_FLUTE
+Um item misterioso que troca\nde personagem.
+
+#org @DESC_CHAR_SWAP_FLUTE_EN
+A mysterious item that lets\nyou switch characters.
+
+#org @DESC_CHAR_SWAP_FLUTE_ES
+Un objeto misterioso que\ncambia de personaje.
+
+#org @gText_CharSwap_TradeBoxName
+TROCA
+
+#org @gText_CharSwap_TradeBoxName_EN
+TRADE
+
+#org @gText_CharSwap_TradeBoxName_ES
+CAMBIO
+
+// ---------------- Start Menu option ----------------
+
+#org @gText_MenuCharSwap
+TROCAR
+
+#org @gText_MenuCharSwap_EN
+SWITCH
+
+#org @gText_MenuCharSwap_ES
+CAMBIAR
+
+#org @gText_CharSwapDescription
+Troca para o outro personagem.
+
+#org @gText_CharSwapDescription_EN
+Switch to the other character.
+
+#org @gText_CharSwapDescription_ES
+Cambia al otro personaje.
+
+#org @gText_CharSwap_DefaultMaleName
+RED
+
+#org @gText_CharSwap_DefaultFemaleName
+LEAF
+
+// ---------------- Portugues (flag 0x260 / padrao) ----------------
+
+#org @gText_CharSwap_Ask
+[PLAYER] usou o Switch...\pTrocar de personagem?
+
+#org @gText_CharSwap_ChooseName
+Primeira vez com o novo personagem!\nQual sera o nome?
+
+#org @gText_CharSwap_CantFollower
+Nao da para trocar agora.\nAlguem esta te seguindo!
+
+#org @gText_CharSwap_CantSurfing
+Nao da para trocar enquanto\nvoce esta surfando.
+
+#org @gText_CharSwap_CantNow
+Nao da para usar isso aqui agora.
+
+// ---------------- English (flag 0x261) ----------------
+
+#org @gText_CharSwap_Ask_EN
+[PLAYER] used the Switch...\pSwitch characters?
+
+#org @gText_CharSwap_ChooseName_EN
+First time with this character!\nWhat will the name be?
+
+#org @gText_CharSwap_CantFollower_EN
+You can't switch now.\nSomeone is following you!
+
+#org @gText_CharSwap_CantSurfing_EN
+You can't switch while\nyou are surfing.
+
+#org @gText_CharSwap_CantNow_EN
+You can't use that right now.
+
+// ---------------- Espanol latino (flag 0x262) ----------------
+
+#org @gText_CharSwap_Ask_ES
+[PLAYER] usó el Switch...\p¿Cambiar de personaje?
+
+#org @gText_CharSwap_ChooseName_ES
+¡Primera vez con este personaje!\n¿Cuál será su nombre?
+
+#org @gText_CharSwap_CantFollower_ES
+No puedes cambiar ahora.\n¡Alguien te está siguiendo!
+
+#org @gText_CharSwap_CantSurfing_ES
+No puedes cambiar mientras\nestás surfeando.
+
+#org @gText_CharSwap_CantNow_ES
+No puedes usar eso aquí ahora.
