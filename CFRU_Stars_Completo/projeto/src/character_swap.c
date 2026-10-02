@@ -42,8 +42,11 @@ character_swap.c
 #define WarpIntoMap_Vanilla ((void (*)(void)) (0x8055378 | 1))
 #define sWarpDestination_NewGame ((struct WarpData*) 0x2031DBC)
 
+extern void LanguageSelect_ReapplyAfterNewGame(void);
+
 void WarpToPlayersRoom_Custom(void)
 {
+	LanguageSelect_ReapplyAfterNewGame(); //O Novo Jogo zerou as flags de idioma (0x260-0x262): liga de novo a escolhida
 	SetWarpDestination(NEW_GAME_START_MAP_GROUP, NEW_GAME_START_MAP_NUM, -1, NEW_GAME_START_X, NEW_GAME_START_Y);
 	sWarpDestination_NewGame->x = NEW_GAME_START_X; //Allow coords above 127
 	sWarpDestination_NewGame->y = NEW_GAME_START_Y;

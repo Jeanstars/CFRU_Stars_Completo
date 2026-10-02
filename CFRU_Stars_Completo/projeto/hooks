@@ -825,3 +825,7 @@ PrintInfoPage 08136fb0 1
 #endif
 
 ScrCmd_setvar_Custom 0806A390 1
+
+#Textos da introducao por idioma (ver assembly/hooks/intro_text_hooks.s e bytereplacement)
+IntroText_StringExpandWrapper 081C5D08 3
+IntroText_PrintTextHook 0812E5A6 4

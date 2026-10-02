@@ -1,0 +1,23 @@
+#org @gText_LangSelect_Title_PT
+SELECIONE O IDIOMA
+
+#org @gText_LangSelect_Title_EN
+SELECT YOUR LANGUAGE
+
+#org @gText_LangSelect_Title_ES
+ELIJA EL IDIOMA
+
+#org @gText_LangSelect_Option_PT
+PORTUGUÊS (BR)
+
+#org @gText_LangSelect_Option_EN
+ENGLISH (USA)
+
+#org @gText_LangSelect_Option_ES
+ESPAÑOL (ESP)
+
+#org @gText_LangSelect_Arrow
+▶
+
+#org @gText_LangSelect_Hint
+[DPAD_UP_DOWN] / [A_BUTTON]

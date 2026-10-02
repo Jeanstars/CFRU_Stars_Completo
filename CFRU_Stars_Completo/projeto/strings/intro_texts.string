@@ -1,0 +1,208 @@
+// ARQUIVO GERADO por editor_textos_intro.py - NAO EDITE A MAO (edite pelo programa).
+
+#org @gIntroText_intro_pag1_PT
+No mundo em que você está prestes a\nentrar, você viverá uma grande\naventura como o herói da história.\n\nConverse com as pessoas e examine\ntudo por onde passar, seja em\ncidades, estradas ou cavernas. Reúna\ninformaçoes e dicas de toda fonte.
+
+#org @gIntroText_intro_pag1_EN
+In the world which you are about to\nenter, you will embark on a grand\nadventure with you as the hero.\n\nSpeak to people and check things\nwherever you go, be it towns, roads,\nor caves. Gather information and\nhints from every source.
+
+#org @gIntroText_intro_pag1_ES
+En el mundo al que estás a punto de\nentrar, vivirás una gran aventura\nsiendo el protagonista.\n\nHabla con la gente y examina todo\nlo que veas, sea en ciudades,\ncaminos o cuevas. Reúne información\ny pistas de cualquier fuente.
+
+#org @gIntroText_intro_pag2_PT
+Novos caminhos se abrirao ao ajudar\npessoas necessitadas, superar desafios\ne resolver mistérios.\n\nÀs vezes, será desafiado por outros\ne atacado por criaturas selvagens.\nSeja corajoso e siga em frente.
+
+#org @gIntroText_intro_pag2_EN
+New paths will open to you by helping\npeople in need, overcoming challenges,\nand solving mysteries.\n\nAt times, you will be challenged by\nothers and attacked by wild creatures.\nBe brave and keep pushing on.
+
+#org @gIntroText_intro_pag2_ES
+Se abrirán nuevos caminos si ayudas\na los necesitados, superas desafíos\ny resuelves misterios.\n\nA veces otros te desafiarán y\ncriaturas salvajes te atacarán.\nSé valiente y sigue adelante.
+
+#org @gIntroText_intro_pag3_PT
+Com esta aventura, esperamos que você\ninteraja com todo tipo de pessoa e\nalcance crescimento pessoal.\nEsse é o nosso maior objetivo.\n\nPressione o botao A e deixe sua\naventura começar!
+
+#org @gIntroText_intro_pag3_EN
+Through your adventure, we hope\nthat you will interact with all sorts\nof people and achieve personal growth.\nThat is our biggest objective.\n\nPress the A Button, and let your\nadventure begin!
+
+#org @gIntroText_intro_pag3_ES
+Con tu aventura, esperamos que\ntrates con todo tipo de personas\ny logres crecer como persona.\nEse es nuestro mayor objetivo.\n\nPulsa el botón A y que comience\ntu aventura.
+
+#org @gIntroText_botoes_intro_PT
+Os vários botoes serao explicados na\nordem de sua importância.
+
+#org @gIntroText_botoes_intro_EN
+The various buttons will be explained in\nthe order of their importance.
+
+#org @gIntroText_botoes_intro_ES
+Se explicarán los distintos botones\npor orden de importancia.
+
+#org @gIntroText_botao_direcional_PT
+Move o personagem principal.\nTambém serve para escolher os\nvários itens dos menus.
+
+#org @gIntroText_botao_direcional_EN
+Moves the main character.\nAlso used to choose various data\nheadings.
+
+#org @gIntroText_botao_direcional_ES
+Mueve al personaje principal.\nTambién sirve para elegir las\ndistintas opciones.
+
+#org @gIntroText_botao_a_PT
+Confirma, examina coisas,\nconversa e avança o texto.
+
+#org @gIntroText_botao_a_EN
+Used to confirm a choice, check\nthings, chat, and scroll text.
+
+#org @gIntroText_botao_a_ES
+Sirve para confirmar, examinar,\nhablar y avanzar el texto.
+
+#org @gIntroText_botao_b_PT
+Usado para sair, cancelar uma\nescolha e cancelar um modo.
+
+#org @gIntroText_botao_b_EN
+Used to exit, cancel a choice,\nand cancel a mode.
+
+#org @gIntroText_botao_b_ES
+Sirve para salir y cancelar\nuna elección o un modo.
+
+#org @gIntroText_botao_start_PT
+Pressione este botao para abrir\no MENU.
+
+#org @gIntroText_botao_start_EN
+Press this button to open the\nMENU.
+
+#org @gIntroText_botao_start_ES
+Pulsa este botón para abrir\nel MENÚ.
+
+#org @gIntroText_botao_select_PT
+Usado para mover itens e\npara usar um item registrado.
+
+#org @gIntroText_botao_select_EN
+Used to shift items and to use\na registered item.
+
+#org @gIntroText_botao_select_ES
+Sirve para mover objetos y usar\nun objeto registrado.
+
+#org @gIntroText_botao_lr_PT
+Se precisar de ajuda para jogar\nou para saber como fazer algo,\npressione o botao L ou R.
+
+#org @gIntroText_botao_lr_EN
+If you need help playing the\ngame, or on how to do things,\npress the L or R Button.
+
+#org @gIntroText_botao_lr_ES
+Si necesitas ayuda para jugar\no para saber cómo hacer algo,\npulsa el botón L o R.
+
+#org @gIntroText_oak_ola_PT
+Olá!\nPrazer em conhecer você!\pBem-vindo ao mundo de POKéMON!\pMeu nome é CARVALHO.\pAs pessoas me chamam com carinho\nde PROFESSOR POKéMON.\p
+
+#org @gIntroText_oak_ola_EN
+Hello, there!\nGlad to meet you!\pWelcome to the world of POKéMON!\pMy name is OAK.\pPeople affectionately refer to me\nas the POKéMON PROFESSOR.\p
+
+#org @gIntroText_oak_ola_ES
+¡Hola!\n¡Encantado de conocerte!\p¡Bienvenido al mundo POKéMON!\pMe llamo OAK.\pLa gente me llama con cariño\nel PROFESOR POKéMON.\p
+
+#org @gIntroText_oak_este_mundo_PT
+Este mundo…
+
+#org @gIntroText_oak_este_mundo_EN
+This world…
+
+#org @gIntroText_oak_este_mundo_ES
+Este mundo…
+
+#org @gIntroText_oak_habitado_PT
+…é habitado em toda parte por\ncriaturas chamadas POKéMON.\p
+
+#org @gIntroText_oak_habitado_EN
+…is inhabited far and wide by\ncreatures called POKéMON.\p
+
+#org @gIntroText_oak_habitado_ES
+…está habitado en todas partes\npor criaturas llamadas POKéMON.\p
+
+#org @gIntroText_oak_pokemon_sao_PT
+Para alguns, POKéMON sao pets.\nOutros os usam para batalhar.\pQuanto a mim…\pEu estudo POKéMON como profissao.\p
+
+#org @gIntroText_oak_pokemon_sao_EN
+For some people, POKéMON are pets.\nOthers use them for battling.\pAs for myself…\pI study POKéMON as a profession.\p
+
+#org @gIntroText_oak_pokemon_sao_ES
+Para unos, POKéMON son mascotas.\nOtros los usan para combatir.\pEn cuanto a mí…\pEstudio POKéMON como profesión.\p
+
+#org @gIntroText_oak_fale_de_voce_PT
+Mas primeiro, conte-me um pouco\nsobre você.\p
+
+#org @gIntroText_oak_fale_de_voce_EN
+But first, tell me a little about\nyourself.\p
+
+#org @gIntroText_oak_fale_de_voce_ES
+Pero antes, cuéntame un poco\nsobre ti.\p
+
+#org @gIntroText_oak_nome_PT
+Vamos começar pelo seu nome.\nQual é?\p
+
+#org @gIntroText_oak_nome_EN
+Let's begin with your name.\nWhat is it?\p
+
+#org @gIntroText_oak_nome_ES
+Empecemos por tu nombre.\n¿Cómo te llamas?\p
+
+#org @gIntroText_oak_seu_nome_e_PT
+Certo…\nSeu nome é [PLAYER].
+
+#org @gIntroText_oak_seu_nome_e_EN
+Right…\nSo your name is [PLAYER].
+
+#org @gIntroText_oak_seu_nome_e_ES
+Bien…\nAsí que te llamas [PLAYER].
+
+#org @gIntroText_oak_neto_PT
+Este é meu neto.\pEle é seu rival desde que vocês\neram bebês.\p…Hum, qual era o nome dele mesmo?
+
+#org @gIntroText_oak_neto_EN
+This is my grandson.\pHe's been your rival since you both\nwere babies.\p…Erm, what was his name now?
+
+#org @gIntroText_oak_neto_ES
+Este es mi nieto.\pEs tu rival desde que erais\nbebés.\p…Eh, ¿cómo se llamaba?
+
+#org @gIntroText_oak_nome_rival_PT
+O nome do seu rival,\nqual era mesmo?
+
+#org @gIntroText_oak_nome_rival_EN
+Your rival's name, what was it now?
+
+#org @gIntroText_oak_nome_rival_ES
+El nombre de tu rival, ¿cuál era?
+
+#org @gIntroText_oak_rival_era_PT
+…Er, era [RIVAL]?
+
+#org @gIntroText_oak_rival_era_EN
+…Er, was it [RIVAL]?
+
+#org @gIntroText_oak_rival_era_ES
+…Eh, ¿era [RIVAL]?
+
+#org @gIntroText_oak_rival_certo_PT
+Isso mesmo! Agora me lembro!\nO nome dele é [RIVAL]!\p
+
+#org @gIntroText_oak_rival_certo_EN
+That's right! I remember now!\nHis name is [RIVAL]!\p
+
+#org @gIntroText_oak_rival_certo_ES
+¡Eso es! ¡Ahora me acuerdo!\n¡Se llama [RIVAL]!\p
+
+#org @gIntroText_oak_lenda_PT
+[PLAYER]!\pSua própria lenda POKéMON\nestá prestes a começar!\pUm mundo de sonhos e aventuras\ncom POKéMON te espera! Vamos lá!
+
+#org @gIntroText_oak_lenda_EN
+[PLAYER]!\pYour very own POKéMON legend is\nabout to unfold!\pA world of dreams and adventures\nwith POKéMON awaits! Let's go!
+
+#org @gIntroText_oak_lenda_ES
+[PLAYER]!\p¡Tu propia leyenda POKéMON\nestá a punto de comenzar!\p¡Te espera un mundo de sueños y\naventuras con POKéMON! ¡Vamos!
+
+#org @gIntroText_oak_menino_menina_PT
+Agora me diga. Você é um menino\nou uma menina?
+
+#org @gIntroText_oak_menino_menina_EN
+Now tell me. Are you a boy?\nOr are you a girl?
+
+#org @gIntroText_oak_menino_menina_ES
+Ahora dime. ¿Eres un chico\no una chica?

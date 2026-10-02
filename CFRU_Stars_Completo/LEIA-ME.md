@@ -47,3 +47,11 @@ documentacao/
 - O desinstalador, rodado nesse projeto completo, remove só a troca de personagem e mantém as suas flags e o seu hook de `setvar`.
 
 Ainda não foi testado no emulador depois de compilado. Faça um save novo e siga o roteiro de testes do `documentacao/LEIA-ME_troca_de_personagem.md`.
+
+## Novidades
+- **Selecao de idioma** apos a tela de titulo (flags 0x260/0x261/0x262): `documentacao/LEIA-ME_selecao_de_idioma.md`
+- **Textos da introducao por idioma + editor**: `documentacao/LEIA-ME_textos_introducao.md` e `ferramentas/editores/editor_textos_intro.html`
+- 0xFC = NPC clicado: `documentacao/LEIA-ME_0xFC_npc_clicado.md`
+- Atencao: `projeto/bytereplacement` substitui o do CFRU.
+- **Tela de idioma com bandeiras e animacao** + gerador dos graficos: `ferramentas/tela_idioma/gerar_tela_idioma.py`
+- Auditoria das alteracoes (o que foi testado): `documentacao/LEIA-ME_auditoria.md`

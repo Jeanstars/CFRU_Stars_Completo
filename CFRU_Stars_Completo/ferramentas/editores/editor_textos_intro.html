@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Editor de textos da introdução — CFRU</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#f3f5f9; --card:#fff; --ink:#1d2433; --mut:#5d6882; --line:#d8deea; --acc:#2f6fdd; --acc2:#1c4fa8;
+          --ok:#1f9d55; --warn:#d98200; --err:#d12c2c; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui,"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:10px 16px; background:#1f2a44; color:#fff; }
+  header h1 { font-size:16px; margin:0 12px 0 0; font-weight:600; }
+  header .sp { flex:1; }
+  #status { font-size:12.5px; color:#c9d3ea; max-width:46vw; }
+  button { font:inherit; cursor:pointer; border:1px solid var(--line); background:#fff; color:var(--ink); padding:7px 12px; border-radius:7px; }
+  button:hover { border-color:#aab6d3; }
+  button.pri { background:var(--acc); border-color:var(--acc2); color:#fff; font-weight:600; }
+  button.pri:hover { background:var(--acc2); }
+  button.big { padding:9px 16px; font-size:14.5px; }
+  button:disabled { opacity:.5; cursor:default; }
+  header button { border-color:#44537a; background:#2b3a5e; color:#fff; }
+  header button.pri { background:var(--acc); border-color:#5b8de6; }
+  main { display:grid; grid-template-columns:270px minmax(380px,1fr) minmax(360px,740px); gap:14px; padding:14px; align-items:start; }
+  @media (max-width:1250px) { main { grid-template-columns:240px 1fr; } #colprev { grid-column:1 / -1; } }
+  @media (max-width:780px)  { main { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; }
+  #lista { max-height:calc(100vh - 110px); overflow:auto; padding:6px; }
+  #lista h3 { margin:10px 6px 4px; font-size:11.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--mut); }
+  #lista .it { display:flex; gap:8px; align-items:center; padding:6px 8px; border-radius:7px; cursor:pointer; }
+  #lista .it:hover { background:#eef2fa; }
+  #lista .it.sel { background:#dfe9fb; font-weight:600; }
+  .dot { width:10px; height:10px; border-radius:50%; flex:none; background:var(--ok); }
+  .dot.warn { background:var(--warn); } .dot.err { background:var(--err); }
+  .tit { margin:0 0 2px; font-size:16px; } .sub { color:var(--mut); font-size:12.5px; margin-bottom:8px; }
+  .tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:8px; flex-wrap:wrap; }
+  .tab { padding:7px 12px; border:1px solid transparent; border-bottom:none; border-radius:7px 7px 0 0; cursor:pointer; background:#eef1f7; }
+  .tab.on { background:#fff; border-color:var(--line); font-weight:600; margin-bottom:-1px; }
+  .tab small { color:var(--mut); font-weight:400; }
+  textarea { width:100%; font:13.5px/1.5 Consolas,"DejaVu Sans Mono",monospace; border:1px solid var(--line); border-radius:8px; padding:8px; resize:vertical; background:#fff; color:var(--ink); }
+  #ta { height:260px; }
+  #orig { height:120px; background:#f0f2f6; color:#44506b; }
+  .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:8px 0; }
+  .row label { display:flex; gap:6px; align-items:center; color:var(--mut); font-size:13px; }
+  #msgs { list-style:none; margin:6px 0 0; padding:0; }
+  #msgs li { padding:5px 8px; border-radius:6px; margin-bottom:4px; font-size:13px; }
+  #msgs li.warn { background:#fff4e0; color:#8a5200; } #msgs li.err { background:#fde8e8; color:#9b1c1c; } #msgs li.ok { background:#e6f6ec; color:#17703e; }
+  #msgs li.info { background:#e9f0fd; color:#254b93; }
+  .hint { font-size:12.5px; color:var(--mut); }
+  details { margin-top:10px; } summary { cursor:pointer; color:var(--mut); }
+  #cv { width:100%; max-width:720px; image-rendering:pixelated; border-radius:8px; border:1px solid var(--line); background:#000; display:block; }
+  .pg { display:flex; align-items:center; gap:10px; margin:8px 0; flex-wrap:wrap; }
+  .pg .info { color:var(--mut); font-size:13px; }
+  .nm input { width:90px; padding:4px 6px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+  #toast { position:fixed; right:16px; bottom:16px; background:#1f2a44; color:#fff; padding:10px 14px; border-radius:9px; max-width:420px; display:none; box-shadow:0 6px 24px #0004; z-index:9; white-space:pre-line; }
+  dialog { border:1px solid var(--line); border-radius:12px; padding:18px; max-width:560px; } dialog::backdrop { background:#0006; }
+  dialog h2 { margin:0 0 8px; font-size:17px; } dialog pre { white-space:pre-wrap; background:#f3f5f9; padding:8px; border-radius:7px; max-height:200px; overflow:auto; font-size:12.5px; }
+  dialog .bt { display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px; }
+  kbd { background:#eef1f7; border:1px solid var(--line); border-radius:4px; padding:0 5px; font:12px Consolas,monospace; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Editor de textos da introdução</h1>
+  <button id="bAbrir" class="pri">📂 Abrir pasta do CFRU</button>
+  <span id="status">Nenhuma pasta aberta. Sem pasta, ao salvar os arquivos são baixados.</span>
+  <span class="sp"></span>
+  <button id="bSalvar" class="pri">💾 Salvar e exportar</button>
+</header>
+
+<main>
+  <section class="card" id="lista" aria-label="Lista de textos"></section>
+
+  <section>
+    <div class="card">
+      <h2 class="tit" id="eTit">—</h2>
+      <div class="sub" id="eSub"></div>
+      <div class="tabs" id="tabs"></div>
+      <textarea id="ta" spellcheck="false" placeholder="Cole aqui o seu texto. O programa adapta sozinho para o jogo."></textarea>
+      <div class="row">
+        <button id="bAdaptar" class="pri big" title="Quebra as linhas e as páginas para caber na tela do jogo">✨ Adaptar texto ao jogo</button>
+        <button id="bDesfazer" disabled>↶ Desfazer adaptação</button>
+        <label><input type="checkbox" id="cAuto" checked> Adaptar sozinho ao colar</label>
+        <label><input type="checkbox" id="cTil" checked> Trocar ã/õ por a/o (a fonte do jogo não tem til)</label>
+      </div>
+      <ul id="msgs"></ul>
+      <p class="hint">Dica: “Adaptar” refaz as quebras de linha e de página sozinho. <kbd>Enter</kbd> no texto = novo parágrafo (no Professor, uma nova página). Códigos que aparecem: <code>\n</code> linha, <code>\p</code> página, <code>\l</code> rola, <code>[PLAYER]</code> e <code>[RIVAL]</code> nomes.</p>
+      <details><summary>Original da ROM (inglês, somente leitura)</summary><textarea id="orig" readonly></textarea></details>
+    </div>
+  </section>
+
+  <section id="colprev">
+    <div class="card">
+      <h2 class="tit">Como fica na tela do jogo</h2>
+      <canvas id="cv" width="240" height="160"></canvas>
+      <div class="pg">
+        <button id="bPrev">◀</button><button id="bNext">▶</button>
+        <span class="info" id="pgInfo"></span>
+      </div>
+      <div class="row nm">
+        <label>Seu nome: <input id="nJog" value="RED" maxlength="7"></label>
+        <label>Rival: <input id="nRiv" value="GREEN" maxlength="7"></label>
+      </div>
+      <p class="hint">As quebras de linha, as páginas e as larguras são <b>exatas</b> (medidas na fonte do jogo). O desenho das letras e do cenário é só aproximado. Linha vermelha = não cabe na caixa.</p>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+<dialog id="dlg"><h2 id="dT"></h2><div id="dB"></div><div class="bt" id="dBt"></div></dialog>
+
+<script id="dados" type="application/json">{
+ "versao": 1,
+ "idiomas": [
+  {
+   "chave": "pt",
+   "nome": "Português (BR)",
+   "flag": "0x260"
+  },
+  {
+   "chave": "en",
+   "nome": "English (USA)",
+   "flag": "0x261"
+  },
+  {
+   "chave": "es",
+   "nome": "Español (ESP)",
+   "flag": "0x262"
+  }
+ ],
+ "sem_flag_usa": "pt",
+ "trocar_til_se_nao_existir": true,
+ "entradas": [
+  {
+   "id": "intro_pag1",
+   "endereco": "0x81C5A04",
+   "grupo": "Guia de controles (Pikachu)",
+   "nota": "Introdução - página 1",
+   "pt": "No mundo em que você está prestes a\\nentrar, você viverá uma grande\\naventura como o herói da história.\\n\\nConverse com as pessoas e examine\\ntudo por onde passar, seja em\\ncidades, estradas ou cavernas. Reúna\\ninformações e dicas de toda fonte.",
+   "en": "In the world which you are about to\\nenter, you will embark on a grand\\nadventure with you as the hero.\\n\\nSpeak to people and check things\\nwherever you go, be it towns, roads,\\nor caves. Gather information and\\nhints from every source.",
+   "es": "En el mundo al que estás a punto de\\nentrar, vivirás una gran aventura\\nsiendo el protagonista.\\n\\nHabla con la gente y examina todo\\nlo que veas, sea en ciudades,\\ncaminos o cuevas. Reúne información\\ny pistas de cualquier fuente.",
+   "original": "In the world which you are about to\\nenter, you will embark on a grand\\nadventure with you as the hero.\\n\\nSpeak to people and check things\\nwherever you go, be it towns, roads,\\nor caves. Gather information and\\nhints from every source."
+  },
+  {
+   "id": "intro_pag2",
+   "endereco": "0x81C5AEB",
+   "grupo": "Guia de controles (Pikachu)",
+   "nota": "Introdução - página 2",
+   "pt": "Novos caminhos se abrirão ao ajudar\\npessoas necessitadas, superar desafios\\ne resolver mistérios.\\n\\nÀs vezes, será desafiado por outros\\ne atacado por criaturas selvagens.\\nSeja corajoso e siga em frente.",
+   "en": "New paths will open to you by helping\\npeople in need, overcoming challenges,\\nand solving mysteries.\\n\\nAt times, you will be challenged by\\nothers and attacked by wild creatures.\\nBe brave and keep pushing on.",
+   "es": "Se abrirán nuevos caminos si ayudas\\na los necesitados, superas desafíos\\ny resuelves misterios.\\n\\nA veces otros te desafiarán y\\ncriaturas salvajes te atacarán.\\nSé valiente y sigue adelante.",
+   "original": "New paths will open to you by helping\\npeople in need, overcoming challenges,\\nand solving mysteries.\\n\\nAt times, you will be challenged by\\nothers and attacked by wild creatures.\\nBe brave and keep pushing on."
+  },
+  {
+   "id": "intro_pag3",
+   "endereco": "0x81C5BB9",
+   "grupo": "Guia de controles (Pikachu)",
+   "nota": "Introdução - página 3",
+   "pt": "Com esta aventura, esperamos que você\\ninteraja com todo tipo de pessoa e\\nalcance crescimento pessoal.\\nEsse é o nosso maior objetivo.\\n\\nPressione o botão A e deixe sua\\naventura começar!",
+   "en": "Through your adventure, we hope\\nthat you will interact with all sorts\\nof people and achieve personal growth.\\nThat is our biggest objective.\\n\\nPress the A Button, and let your\\nadventure begin!",
+   "es": "Con tu aventura, esperamos que\\ntrates con todo tipo de personas\\ny logres crecer como persona.\\nEse es nuestro mayor objetivo.\\n\\nPulsa el botón A y que comience\\ntu aventura.",
+   "original": "Through your adventure, we hope\\nthat you will interact with all sorts\\nof people and achieve personal growth.\\nThat is our biggest objective.\\n\\nPress the A Button, and let your\\nadventure begin!"
+  },
+  {
+   "id": "botoes_intro",
+   "endereco": "0x81C582D",
+   "grupo": "Guia de controles (explicação)",
+   "nota": "Explicação dos botões",
+   "pt": "Os vários botões serão explicados na\\nordem de sua importância.",
+   "en": "The various buttons will be explained in\\nthe order of their importance.",
+   "es": "Se explicarán los distintos botones\\npor orden de importancia.",
+   "original": "The various buttons will be explained in\\nthe order of their importance."
+  },
+  {
+   "id": "botao_direcional",
+   "endereco": "0x81C5875",
+   "grupo": "Guia de controles (botões)",
+   "nota": "Direcional",
+   "pt": "Move o personagem principal.\\nTambém serve para escolher os\\nvários itens dos menus.",
+   "en": "Moves the main character.\\nAlso used to choose various data\\nheadings.",
+   "es": "Mueve al personaje principal.\\nTambién sirve para elegir las\\ndistintas opciones.",
+   "original": "Moves the main character.\\nAlso used to choose various data\\nheadings.",
+   "linhas_max": 3
+  },
+  {
+   "id": "botao_a",
+   "endereco": "0x81C58BA",
+   "grupo": "Guia de controles (botões)",
+   "nota": "Botão A",
+   "pt": "Confirma, examina coisas,\\nconversa e avança o texto.",
+   "en": "Used to confirm a choice, check\\nthings, chat, and scroll text.",
+   "es": "Sirve para confirmar, examinar,\\nhablar y avanzar el texto.",
+   "original": "Used to confirm a choice, check\\nthings, chat, and scroll text.",
+   "linhas_max": 2
+  },
+  {
+   "id": "botao_b",
+   "endereco": "0x81C58F9",
+   "grupo": "Guia de controles (botões)",
+   "nota": "Botão B",
+   "pt": "Usado para sair, cancelar uma\\nescolha e cancelar um modo.",
+   "en": "Used to exit, cancel a choice,\\nand cancel a mode.",
+   "es": "Sirve para salir y cancelar\\nuna elección o un modo.",
+   "original": "Used to exit, cancel a choice,\\nand cancel a mode.",
+   "linhas_max": 2
+  },
+  {
+   "id": "botao_start",
+   "endereco": "0x81C592B",
+   "grupo": "Guia de controles (botões)",
+   "nota": "Botão START",
+   "pt": "Pressione este botão para abrir\\no MENU.",
+   "en": "Press this button to open the\\nMENU.",
+   "es": "Pulsa este botón para abrir\\nel MENÚ.",
+   "original": "Press this button to open the\\nMENU.",
+   "linhas_max": 2
+  },
+  {
+   "id": "botao_select",
+   "endereco": "0x81C594F",
+   "grupo": "Guia de controles (botões)",
+   "nota": "Botão SELECT",
+   "pt": "Usado para mover itens e\\npara usar um item registrado.",
+   "en": "Used to shift items and to use\\na registered item.",
+   "es": "Sirve para mover objetos y usar\\nun objeto registrado.",
+   "original": "Used to shift items and to use\\na registered item.",
+   "linhas_max": 2
+  },
+  {
+   "id": "botao_lr",
+   "endereco": "0x81C5981",
+   "grupo": "Guia de controles (botões)",
+   "nota": "Botões L / R",
+   "pt": "Se precisar de ajuda para jogar\\nou para saber como fazer algo,\\npressione o botão L ou R.",
+   "en": "If you need help playing the\\ngame, or on how to do things,\\npress the L or R Button.",
+   "es": "Si necesitas ayuda para jugar\\no para saber cómo hacer algo,\\npulsa el botón L o R.",
+   "original": "If you need help playing the\\ngame, or on how to do things,\\npress the L or R Button.",
+   "linhas_max": 3
+  },
+  {
+   "id": "oak_ola",
+   "endereco": "0x81C5C78",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Apresentação",
+   "pt": "Olá!\\nPrazer em conhecer você!\\pBem-vindo ao mundo de POKéMON!\\pMeu nome é CARVALHO.\\pAs pessoas me chamam com carinho\\nde PROFESSOR POKéMON.\\p",
+   "en": "Hello, there!\\nGlad to meet you!\\pWelcome to the world of POKéMON!\\pMy name is OAK.\\pPeople affectionately refer to me\\nas the POKéMON PROFESSOR.\\p",
+   "es": "¡Hola!\\n¡Encantado de conocerte!\\p¡Bienvenido al mundo POKéMON!\\pMe llamo OAK.\\pLa gente me llama con cariño\\nel PROFESOR POKéMON.\\p",
+   "original": "Hello, there!\\nGlad to meet you!\\pWelcome to the world of POKéMON!\\pMy name is OAK.\\pPeople affectionately refer to me\\nas the POKéMON PROFESSOR.\\p"
+  },
+  {
+   "id": "oak_este_mundo",
+   "endereco": "0x81C5D06",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Este mundo…",
+   "pt": "Este mundo…",
+   "en": "This world…",
+   "es": "Este mundo…",
+   "original": "This world…"
+  },
+  {
+   "id": "oak_habitado",
+   "endereco": "0x81C5D12",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Habitado por POKéMON",
+   "pt": "…é habitado em toda parte por\\ncriaturas chamadas POKéMON.\\p",
+   "en": "…is inhabited far and wide by\\ncreatures called POKéMON.\\p",
+   "es": "…está habitado en todas partes\\npor criaturas llamadas POKéMON.\\p",
+   "original": "…is inhabited far and wide by\\ncreatures called POKéMON.\\p"
+  },
+  {
+   "id": "oak_pokemon_sao",
+   "endereco": "0x81C5D4B",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "POKéMON: pets e profissão",
+   "pt": "Para alguns, POKéMON são pets.\\nOutros os usam para batalhar.\\pQuanto a mim…\\pEu estudo POKéMON como profissão.\\p",
+   "en": "For some people, POKéMON are pets.\\nOthers use them for battling.\\pAs for myself…\\pI study POKéMON as a profession.\\p",
+   "es": "Para unos, POKéMON son mascotas.\\nOtros los usan para combatir.\\pEn cuanto a mí…\\pEstudio POKéMON como profesión.\\p",
+   "original": "For some people, POKéMON are pets.\\nOthers use them for battling.\\pAs for myself…\\pI study POKéMON as a profession.\\p"
+  },
+  {
+   "id": "oak_fale_de_voce",
+   "endereco": "0x81C5DBD",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Fale um pouco de você",
+   "pt": "Mas primeiro, conte-me um pouco\\nsobre você.\\p",
+   "en": "But first, tell me a little about\\nyourself.\\p",
+   "es": "Pero antes, cuéntame un poco\\nsobre ti.\\p",
+   "original": "But first, tell me a little about\\nyourself.\\p"
+  },
+  {
+   "id": "oak_nome",
+   "endereco": "0x81C5DEA",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Pergunta do nome",
+   "pt": "Vamos começar pelo seu nome.\\nQual é?\\p",
+   "en": "Let's begin with your name.\\nWhat is it?\\p",
+   "es": "Empecemos por tu nombre.\\n¿Cómo te llamas?\\p",
+   "original": "Let's begin with your name.\\nWhat is it?\\p"
+  },
+  {
+   "id": "oak_seu_nome_e",
+   "endereco": "0x81C5E13",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Confirmação do nome",
+   "pt": "Certo…\\nSeu nome é [PLAYER].",
+   "en": "Right…\\nSo your name is [PLAYER].",
+   "es": "Bien…\\nAsí que te llamas [PLAYER].",
+   "original": "Right…\\nSo your name is [PLAYER]."
+  },
+  {
+   "id": "oak_neto",
+   "endereco": "0x81C5E2E",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Apresenta o neto (rival)",
+   "pt": "Este é meu neto.\\pEle é seu rival desde que vocês\\neram bebês.\\p…Hum, qual era o nome dele mesmo?",
+   "en": "This is my grandson.\\pHe's been your rival since you both\\nwere babies.\\p…Erm, what was his name now?",
+   "es": "Este es mi nieto.\\pEs tu rival desde que erais\\nbebés.\\p…Eh, ¿cómo se llamaba?",
+   "original": "This is my grandson.\\pHe's been your rival since you both\\nwere babies.\\p…Erm, what was his name now?"
+  },
+  {
+   "id": "oak_nome_rival",
+   "endereco": "0x81C5E91",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Pergunta do nome do rival",
+   "pt": "O nome do seu rival,\\nqual era mesmo?",
+   "en": "Your rival's name, what was it now?",
+   "es": "El nombre de tu rival, ¿cuál era?",
+   "original": "Your rival's name, what was it now?"
+  },
+  {
+   "id": "oak_rival_era",
+   "endereco": "0x81C5EB5",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Confirmação do rival (1)",
+   "pt": "…Er, era [RIVAL]?",
+   "en": "…Er, was it [RIVAL]?",
+   "es": "…Eh, ¿era [RIVAL]?",
+   "original": "…Er, was it [RIVAL]?"
+  },
+  {
+   "id": "oak_rival_certo",
+   "endereco": "0x81C5EC5",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Confirmação do rival (2)",
+   "pt": "Isso mesmo! Agora me lembro!\\nO nome dele é [RIVAL]!\\p",
+   "en": "That's right! I remember now!\\nHis name is [RIVAL]!\\p",
+   "es": "¡Eso es! ¡Ahora me acuerdo!\\n¡Se llama [RIVAL]!\\p",
+   "original": "That's right! I remember now!\\nHis name is [RIVAL]!\\p"
+  },
+  {
+   "id": "oak_lenda",
+   "endereco": "0x81C5EF4",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Sua lenda vai começar",
+   "pt": "[PLAYER]!\\pSua própria lenda POKéMON\\nestá prestes a começar!\\pUm mundo de sonhos e aventuras\\ncom POKéMON te espera! Vamos lá!",
+   "en": "[PLAYER]!\\pYour very own POKéMON legend is\\nabout to unfold!\\pA world of dreams and adventures\\nwith POKéMON awaits! Let's go!",
+   "es": "[PLAYER]!\\p¡Tu propia leyenda POKéMON\\nestá a punto de comenzar!\\p¡Te espera un mundo de sueños y\\naventuras con POKéMON! ¡Vamos!",
+   "original": "[PLAYER]!\\pYour very own POKéMON legend is\\nabout to unfold!\\pA world of dreams and adventures\\nwith POKéMON awaits! Let's go!"
+  },
+  {
+   "id": "oak_menino_menina",
+   "endereco": "0x81C59D5",
+   "grupo": "Professor Carvalho (Oak)",
+   "nota": "Menino ou menina?",
+   "pt": "Agora me diga. Você é um menino\\nou uma menina?",
+   "en": "Now tell me. Are you a boy?\\nOr are you a girl?",
+   "es": "Ahora dime. ¿Eres un chico\\no una chica?",
+   "original": "Now tell me. Are you a boy?\\nOr are you a girl?"
+  }
+ ],
+ "fonte_larguras": {
+  " ": 6,
+  "À": 6,
+  "Á": 6,
+  "Â": 6,
+  "Ç": 6,
+  "È": 6,
+  "É": 6,
+  "Ê": 6,
+  "Ë": 6,
+  "Ì": 6,
+  "Î": 6,
+  "Ï": 6,
+  "Ò": 6,
+  "Ó": 6,
+  "Ô": 6,
+  "Œ": 8,
+  "Ù": 6,
+  "Ú": 6,
+  "Û": 6,
+  "Ñ": 6,
+  "ß": 6,
+  "à": 6,
+  "á": 6,
+  "ç": 6,
+  "è": 6,
+  "é": 6,
+  "ê": 6,
+  "ë": 6,
+  "ì": 6,
+  "î": 6,
+  "ï": 6,
+  "ò": 6,
+  "ó": 6,
+  "ô": 6,
+  "œ": 8,
+  "ù": 6,
+  "ú": 6,
+  "û": 6,
+  "ñ": 6,
+  "º": 6,
+  "ª": 6,
+  "&": 8,
+  "+": 8,
+  "=": 8,
+  ";": 5,
+  "¿": 6,
+  "¡": 6,
+  "Í": 6,
+  "%": 8,
+  "(": 5,
+  ")": 5,
+  "â": 6,
+  "í": 6,
+  "<": 8,
+  ">": 8,
+  "0": 6,
+  "1": 6,
+  "2": 6,
+  "3": 6,
+  "4": 6,
+  "5": 6,
+  "6": 6,
+  "7": 6,
+  "8": 6,
+  "9": 6,
+  "!": 6,
+  "?": 6,
+  ".": 5,
+  "-": 6,
+  "·": 5,
+  "…": 6,
+  "\"": 6,
+  "“": 6,
+  "”": 6,
+  "‘": 3,
+  "’": 3,
+  "'": 3,
+  "♂": 6,
+  "♀": 6,
+  ",": 5,
+  "*": 9,
+  "/": 6,
+  "A": 6,
+  "B": 6,
+  "C": 6,
+  "D": 6,
+  "E": 6,
+  "F": 6,
+  "G": 6,
+  "H": 6,
+  "I": 6,
+  "J": 6,
+  "K": 6,
+  "L": 6,
+  "M": 6,
+  "N": 6,
+  "O": 6,
+  "P": 6,
+  "Q": 6,
+  "R": 6,
+  "S": 6,
+  "T": 6,
+  "U": 6,
+  "V": 6,
+  "W": 6,
+  "X": 6,
+  "Y": 6,
+  "Z": 6,
+  "a": 6,
+  "b": 6,
+  "c": 6,
+  "d": 6,
+  "e": 6,
+  "f": 5,
+  "g": 6,
+  "h": 6,
+  "i": 4,
+  "j": 6,
+  "k": 5,
+  "l": 5,
+  "m": 6,
+  "n": 5,
+  "o": 6,
+  "p": 6,
+  "q": 6,
+  "r": 5,
+  "s": 5,
+  "t": 5,
+  "u": 6,
+  "v": 6,
+  "w": 6,
+  "x": 6,
+  "y": 6,
+  "z": 6,
+  "▶": 8,
+  ":": 5,
+  "Ä": 6,
+  "Ö": 6,
+  "Ü": 6,
+  "ä": 6,
+  "ö": 6,
+  "ü": 6
+ },
+ "grupos": {
+  "Guia de controles (Pikachu)": {
+   "largura_px": 216,
+   "linhas_max": 8,
+   "paginas": false
+  },
+  "Guia de controles (explicação)": {
+   "largura_px": 221,
+   "linhas_max": 2,
+   "paginas": false
+  },
+  "Guia de controles (botões)": {
+   "largura_px": 182,
+   "linhas_max": 3,
+   "paginas": false
+  },
+  "Professor Carvalho (Oak)": {
+   "largura_px": 196,
+   "linhas_max": 2,
+   "paginas": true,
+   "linhas_por_pagina": 2
+  }
+ }
+}</script>
+<script>/* Logica do editor de textos da introducao (sem interface).
+   Porta fiel do editor_textos_intro.py: formatar, analisar e gerar os arquivos do projeto. */
+(function (root) {
+  "use strict";
+
+  const TOKENS = ["\\n", "\\p", "\\l", "[PLAYER]", "[RIVAL]"];
+  const TROCAS_TIL = { "ã": "a", "õ": "o", "Ã": "A", "Õ": "O" };
+  const TROCA_LETRAS = { "ä": "ã", "Ä": "Ã", "ö": "õ", "Ö": "Õ" }; // outras hacks usam ä/ö no lugar de ã/õ
+  const CARACTERES_PADRAO = new Set(Array.from(
+    " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~" +
+    "ÀÁÂÇÈÉÊËÌÎÏÒÓÔŒÙÚÛÑßàáâçèéêëìíîïòóôœùúûñºª¿¡ÍÄÖÜäöü…“”‘’♂♀▶·"));
+
+  const tem = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+
+  /* ---------- medidas ---------- */
+  function larguraLinha(linha, larguras) {
+    linha = linha.split("[PLAYER]").join("MMMMMMM").split("[RIVAL]").join("MMMMMMM");
+    if (!larguras) return Array.from(linha).length * 6;
+    let s = 0;
+    for (const c of linha) s += tem(larguras, c) ? larguras[c] : 6;
+    return s;
+  }
+
+  function configGrupo(dados, grupo) {
+    const g = (dados.grupos || {})[grupo];
+    return g || { largura_px: 200, linhas_max: 8, paginas: false };
+  }
+
+  function paginas(texto) {
+    const res = [];
+    for (const pag of texto.split("\\p")) res.push(pag.split(/\\n|\\l/));
+    if (res.length && res[res.length - 1].length === 1 && res[res.length - 1][0] === "") res.pop();
+    return res;
+  }
+
+  /* ---------- normalizacao e formatacao automatica ---------- */
+  function normalizar(texto) {
+    texto = texto.replace(/pok[eéEÉ]mon/gi, "POKéMON"); // o jogo escreve POKéMON
+    texto = texto.replace(/\.\.\./g, "…");               // reticencias do jogo
+    texto = texto.replace(/[\u201c\u201d]/g, '"').replace(/[\u2018\u2019]/g, "'");
+    return Array.from(texto).map(c => (tem(TROCA_LETRAS, c) ? TROCA_LETRAS[c] : c)).join("");
+  }
+
+  function quebrarLinhas(paragrafo, limite, larguras) {
+    const linhas = [];
+    let atual = "";
+    for (const palavra of paragrafo.split(" ")) {
+      if (!palavra) continue;
+      const tentativa = atual ? atual + " " + palavra : palavra;
+      if (atual && larguraLinha(tentativa, larguras) > limite) {
+        linhas.push(atual);
+        atual = palavra;
+      } else {
+        atual = tentativa;
+      }
+    }
+    if (atual) linhas.push(atual);
+    return linhas;
+  }
+
+  /* Recebe um texto simples (ou ja com \n \p) e devolve o texto pronto para o jogo. */
+  function formatar(texto, entrada, dados) {
+    const cfg = configGrupo(dados, entrada.grupo);
+    const larguras = dados.fonte_larguras;
+    const limite = cfg.largura_px;
+    const termina_p = (entrada.original !== undefined ? entrada.original : (entrada.en || "")).endsWith("\\p");
+
+    let t = texto.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    t = t.replace(/(\\[npl])\n/g, "$1");          // quebras cosmeticas que o editor mostra depois dos codigos
+    t = t.replace(/(\\n){2,}/g, "\u0000");         // \n\n = paragrafo
+    t = t.split("\\p").join("\u0000").split("\n").join("\u0000");
+    t = t.replace(/\\[nl]/g, " ");                 // \n e \l simples viram espaco (sao refeitos)
+    t = normalizar(t);
+    let paragrafos = t.split("\u0000").map(p => p.replace(/\s+/g, " ").trim()).filter(p => p);
+    if (!paragrafos.length) return "";
+
+    if (cfg.paginas) {
+      const porPag = cfg.linhas_por_pagina || 2;
+      const pags = [];
+      for (const p of paragrafos) {
+        const lin = quebrarLinhas(p, limite, larguras);
+        for (let i = 0; i < lin.length; i += porPag) pags.push(lin.slice(i, i + porPag).join("\\n"));
+      }
+      let r = pags.join("\\p");
+      if (termina_p) r += "\\p";
+      return r;
+    }
+    return paragrafos.map(p => quebrarLinhas(p, limite, larguras).join("\\n")).join("\\n\\n");
+  }
+
+  /* ---------- analise ---------- */
+  function analisar(entrada, chave, suportados, trocarTil, dados) {
+    const texto = entrada[chave];
+    const avisos = [], erros = [];
+    const larguras = dados.fonte_larguras;
+    const cfg = configGrupo(dados, entrada.grupo);
+
+    let s = texto;
+    for (const t of TOKENS) s = s.split(t).join("");
+    const faltando = Array.from(new Set(Array.from(s).filter(c => !suportados.has(c)))).sort();
+    for (const c of faltando) {
+      if (tem(TROCAS_TIL, c) && trocarTil)
+        avisos.push({ tipo: "til", msg: "A fonte do jogo não tem '" + c + "': vai aparecer como '" + TROCAS_TIL[c] + "'." });
+      else
+        erros.push({ tipo: "char", msg: "O caractere '" + c + "' não existe na fonte do jogo. Troque por outro." });
+    }
+
+    const re = /\\.|\[[A-Z]+\]/g;
+    let m;
+    while ((m = re.exec(texto)) !== null)
+      if (!TOKENS.includes(m[0])) erros.push({ tipo: "codigo", msg: "Código desconhecido: " + m[0] });
+
+    const limiteLinhas = entrada.linhas_max || cfg.linhas_por_pagina || cfg.linhas_max || 8;
+    paginas(texto).forEach((p, i) => {
+      if (p.length > limiteLinhas)
+        avisos.push({ tipo: "linhas", msg: "Página " + (i + 1) + " tem " + p.length + " linhas (máximo " + limiteLinhas + ")." });
+      p.forEach((l, j) => {
+        const w = larguraLinha(l, larguras);
+        if (w > cfg.largura_px)
+          avisos.push({ tipo: "largura", msg: "Página " + (i + 1) + ", linha " + (j + 1) + ": " + w + " px (limite " + cfg.largura_px + ")." });
+      });
+    });
+    return { avisos, erros };
+  }
+
+  /* ---------- charmap ---------- */
+  function suportadosDoCharmap(textoCharmap) {
+    const ok = new Set([" ", "é"]);
+    for (let linha of textoCharmap.replace(/^\uFEFF/, "").split("\n")) {
+      linha = linha.replace(/\r$/, "");
+      const i = linha.indexOf("=");
+      if (i >= 0) {
+        const v = linha.slice(i + 1);
+        if (Array.from(v).length === 1) ok.add(v);
+      }
+    }
+    return ok;
+  }
+
+  /* ---------- geracao dos arquivos ---------- */
+  function textoParaString(texto, suportados, trocarTil) {
+    if (!trocarTil) return texto;
+    return Array.from(texto).map(c => (!suportados.has(c) && tem(TROCAS_TIL, c) ? TROCAS_TIL[c] : c)).join("");
+  }
+
+  function hex(n) { return "0x" + n.toString(16).toUpperCase(); }
+
+  function gerar(dados, suportados, nomePrograma) {
+    nomePrograma = nomePrograma || "editor_textos_intro.html";
+    const trocar = dados.trocar_til_se_nao_existir !== false;
+    const idiomas = dados.idiomas, entradas = dados.entradas;
+
+    const problemas = [];
+    for (const e of entradas)
+      for (const idi of idiomas)
+        for (const er of analisar(e, idi.chave, suportados, trocar, dados).erros)
+          problemas.push(e.id + " [" + idi.chave + "]: " + er.msg);
+    if (problemas.length) {
+      const err = new Error("Corrija antes de salvar:\n  " + problemas.join("\n  "));
+      err.problemas = problemas;
+      throw err;
+    }
+
+    const cab = "// ARQUIVO GERADO por " + nomePrograma + " - NAO EDITE A MAO (edite pelo programa).";
+    const linhas = [cab, ""];
+    for (const e of entradas)
+      for (const idi of idiomas) {
+        linhas.push("#org @gIntroText_" + e.id + "_" + idi.chave.toUpperCase());
+        linhas.push(textoParaString(e[idi.chave], suportados, trocar));
+        linhas.push("");
+      }
+    const string = linhas.join("\n");
+
+    const enderecos = entradas.map(e => parseInt(e.endereco, 16));
+    const nl = idiomas.length;
+    const chaves = idiomas.map(i => i.chave);
+    const padrao = chaves.indexOf(dados.sem_flag_usa || idiomas[0].chave);
+    const h = [cab, "#pragma once", ""];
+    for (const e of entradas)
+      for (const idi of idiomas) h.push("extern const u8 gIntroText_" + e.id + "_" + idi.chave.toUpperCase() + "[];");
+    h.push("", "#define INTRO_LANG_COUNT " + nl, "#define INTRO_LANG_DEFAULT " + padrao,
+      "#define INTRO_TEXT_MIN " + hex(Math.min(...enderecos)), "#define INTRO_TEXT_MAX " + hex(Math.max(...enderecos)), "",
+      "struct IntroTextEntry", "{", "\tu32 original;", "\tconst u8* text[INTRO_LANG_COUNT];", "};", "",
+      "//Ordem dos idiomas = ordem das flags abaixo",
+      "static const u16 sIntroLangFlags[INTRO_LANG_COUNT] = {" + idiomas.map(i => i.flag).join(", ") + "};", "",
+      "static const struct IntroTextEntry sIntroTexts[] =", "{");
+    for (const e of entradas) {
+      const nomes = idiomas.map(i => "gIntroText_" + e.id + "_" + i.chave.toUpperCase()).join(", ");
+      h.push("\t{" + hex(parseInt(e.endereco, 16)) + ", {" + nomes + "}},");
+    }
+    h.push("};");
+    return { string: string, header: h.join("\n") + "\n" };
+  }
+
+  const api = { TOKENS, TROCAS_TIL, CARACTERES_PADRAO, larguraLinha, configGrupo, paginas, normalizar,
+                quebrarLinhas, formatar, analisar, suportadosDoCharmap, textoParaString, gerar };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.TextosCore = api;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+<script>
+"use strict";
+(function () {
+  const C = TextosCore;
+  let dados = JSON.parse(document.getElementById("dados").textContent);
+  let suportados = C.CARACTERES_PADRAO;
+  let pasta = null;                 // pasta do CFRU (File System Access API)
+  let sel = 0, aba = 0, pagina = 0;
+  const hist = {};                  // desfazer: "id|chave" -> [textos]
+  const $ = id => document.getElementById(id);
+  const ta = $("ta");
+  const trocarTil = () => $("cTil").checked;
+
+  /* ---------- texto <-> caixa ---------- */
+  const mostrar = t => t.replace(/(\\n|\\p|\\l)/g, "$1\n");                       // quebra "cosmetica" depois dos codigos
+  const doBruto = raw => raw.replace(/\r\n?/g, "\n").replace(/(\\[npl])\n/g, "$1").replace(/\n/g, "\\n");
+  const entrada = () => dados.entradas[sel];
+  const chaveIdioma = () => dados.idiomas[aba].chave;
+
+  function toast(msg, ms) {
+    const t = $("toast"); t.textContent = msg; t.style.display = "block";
+    clearTimeout(toast.h); toast.h = setTimeout(() => (t.style.display = "none"), ms || 3500);
+  }
+
+  /* ---------- lista ---------- */
+  function estadoEntrada(e) {
+    let st = "ok";
+    for (const idi of dados.idiomas) {
+      const r = C.analisar(e, idi.chave, suportados, trocarTil(), dados);
+      if (r.erros.length) return "err";
+      if (r.avisos.some(a => a.tipo !== "til")) st = "warn";
+    }
+    return st;
+  }
+  function renderLista() {
+    const box = $("lista"); box.innerHTML = "";
+    let grupo = null;
+    dados.entradas.forEach((e, i) => {
+      if (e.grupo !== grupo) { grupo = e.grupo; const h = document.createElement("h3"); h.textContent = grupo; box.appendChild(h); }
+      const d = document.createElement("div");
+      d.className = "it" + (i === sel ? " sel" : "");
+      const st = estadoEntrada(e);
+      d.innerHTML = '<span class="dot ' + (st === "ok" ? "" : st) + '"></span><span></span>';
+      d.lastChild.textContent = e.nota;
+      d.onclick = () => { sel = i; pagina = 0; renderTudo(); };
+      box.appendChild(d);
+    });
+  }
+
+  /* ---------- editor ---------- */
+  function renderTabs() {
+    const t = $("tabs"); t.innerHTML = "";
+    dados.idiomas.forEach((idi, i) => {
+      const d = document.createElement("div");
+      d.className = "tab" + (i === aba ? " on" : "");
+      d.innerHTML = idi.nome + ' <small>flag ' + idi.flag + "</small>";
+      d.onclick = () => { aba = i; pagina = 0; renderTudo(); };
+      t.appendChild(d);
+    });
+  }
+  function renderEditor() {
+    const e = entrada();
+    $("eTit").textContent = e.nota;
+    $("eSub").textContent = e.grupo + "  •  endereço original " + e.endereco;
+    ta.value = mostrar(e[chaveIdioma()]);
+    $("orig").value = mostrar(e.original !== undefined ? e.original : e.en);
+    $("bDesfazer").disabled = !(hist[e.id + "|" + chaveIdioma()] || []).length;
+  }
+  function renderMsgs() {
+    const e = entrada(), ul = $("msgs"); ul.innerHTML = "";
+    const r = C.analisar(e, chaveIdioma(), suportados, trocarTil(), dados);
+    const add = (cls, txt) => { const li = document.createElement("li"); li.className = cls; li.textContent = txt; ul.appendChild(li); };
+    r.erros.forEach(x => add("err", "✖ " + x.msg));
+    r.avisos.forEach(x => add(x.tipo === "til" ? "info" : "warn", (x.tipo === "til" ? "ℹ " : "⚠ ") + x.msg +
+      (x.tipo === "largura" || x.tipo === "linhas" ? " Clique em “Adaptar texto ao jogo”." : "")));
+    if (!r.erros.length && !r.avisos.some(a => a.tipo !== "til")) add("ok", "✔ Cabe na tela do jogo.");
+  }
+  function atualizar() { renderMsgs(); renderLista(); desenhar(); }
+  function renderTudo() { renderLista(); renderTabs(); renderEditor(); renderMsgs(); desenhar(); }
+
+  ta.addEventListener("input", () => { entrada()[chaveIdioma()] = doBruto(ta.value); pagina = Math.min(pagina, 9999); atualizar(); });
+
+  function adaptar(raw, avisar) {
+    const e = entrada(), k = chaveIdioma(), h = e.id + "|" + k;
+    (hist[h] = hist[h] || []).push(e[k]);
+    const novo = C.formatar(raw, e, dados);
+    e[k] = novo; ta.value = mostrar(novo); pagina = 0;
+    $("bDesfazer").disabled = false;
+    atualizar();
+    if (avisar) {
+      const n = C.paginas(novo).length;
+      toast("Texto adaptado ao jogo: " + (C.configGrupo(dados, e.grupo).paginas ? n + " página(s) de 2 linhas." : "linhas quebradas pela largura da caixa."));
+    }
+  }
+  $("bAdaptar").onclick = () => adaptar(ta.value, true);
+  $("bDesfazer").onclick = () => {
+    const e = entrada(), k = chaveIdioma(), a = hist[e.id + "|" + k];
+    if (!a || !a.length) return;
+    e[k] = a.pop(); ta.value = mostrar(e[k]); $("bDesfazer").disabled = !a.length; atualizar();
+  };
+  ta.addEventListener("paste", ev => {
+    if (!$("cAuto").checked) return;
+    ev.preventDefault();
+    const txt = (ev.clipboardData || window.clipboardData).getData("text");
+    const i = ta.selectionStart, j = ta.selectionEnd;
+    adaptar(ta.value.slice(0, i) + txt + ta.value.slice(j), true);
+  });
+  $("cTil").onchange = () => atualizar();
+  $("nJog").oninput = $("nRiv").oninput = () => desenhar();
+
+  /* ---------- previa da tela do jogo ---------- */
+  const cv = $("cv"), ctx = cv.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+  const cache = new Map();
+  function glifo(ch, cor, w) {
+    const key = ch + "|" + cor + "|" + w;
+    if (cache.has(key)) return cache.get(key);
+    // desenha em 4x e reduz: formas mais limpas que desenhar direto em 1x
+    const S = 4, big = document.createElement("canvas"); big.width = 18 * S; big.height = 18 * S;
+    const bx = big.getContext("2d");
+    bx.font = (10 * S) + 'px "DejaVu Sans","Segoe UI",Arial,sans-serif';
+    const m = bx.measureText(ch).width || 1, alvo = Math.max(2, w - 1) * S;
+    bx.save(); bx.scale(Math.min(1.35, alvo / m), 1); bx.fillText(ch, 0, 12 * S); bx.restore();
+    const c = document.createElement("canvas"); c.width = 18; c.height = 18;
+    const x = c.getContext("2d", { willReadFrequently: true });
+    x.imageSmoothingEnabled = true; x.imageSmoothingQuality = "high";
+    x.drawImage(big, 0, 0, 18, 18);
+    const id = x.getImageData(0, 0, 18, 18), p = id.data;
+    const r = parseInt(cor.slice(1, 3), 16), g = parseInt(cor.slice(3, 5), 16), b = parseInt(cor.slice(5, 7), 16);
+    for (let i = 0; i < p.length; i += 4) { const on = p[i + 3] > 96; p[i] = r; p[i + 1] = g; p[i + 2] = b; p[i + 3] = on ? 255 : 0; }
+    x.putImageData(id, 0, 0);
+    cache.set(key, c); return c;
+  }
+  function texto(linha, x, y, cor) {
+    for (const ch of linha) {
+      const w = Object.prototype.hasOwnProperty.call(dados.fonte_larguras, ch) ? dados.fonte_larguras[ch] : 6;
+      if (ch !== " ") { ctx.drawImage(glifo(ch, "#c3c3c3", w), x + 1, y + 1); ctx.drawImage(glifo(ch, cor, w), x, y); }
+      x += w;
+    }
+  }
+  function caixa(x, y, w, h, borda) {
+    ctx.fillStyle = borda; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = "#fff"; ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+    ctx.fillStyle = "#e4ebf7"; ctx.fillRect(x + 2, y + 2, w - 4, 1);
+  }
+  function triangulo(x, y, cor) {
+    ctx.fillStyle = cor;
+    for (let i = 0; i < 4; i++) ctx.fillRect(x + i, y + i, 9 - 2 * i, 1);
+  }
+  function desenhar() {
+    const e = entrada(), cfg = C.configGrupo(dados, e.grupo);
+    const oak = !!cfg.paginas;
+    // texto como vai aparecer no jogo (til trocado, nomes dos personagens)
+    let t = C.textoParaString(e[chaveIdioma()], suportados, trocarTil());
+    t = t.split("[PLAYER]").join($("nJog").value || "RED").split("[RIVAL]").join($("nRiv").value || "GREEN");
+    const pags = C.paginas(t.length ? t : " ");
+    pagina = Math.max(0, Math.min(pagina, pags.length - 1));
+    const linhas = pags[pagina];
+    // para medir limites usamos o texto original (com [PLAYER] = pior caso)
+    const crua = C.paginas(e[chaveIdioma()])[Math.min(pagina, C.paginas(e[chaveIdioma()]).length - 1)] || [];
+    const limite = cfg.largura_px, maxLin = e.linhas_max || cfg.linhas_por_pagina || cfg.linhas_max || 8;
+
+    if (oak) {
+      const g = ctx.createLinearGradient(0, 0, 0, 160);
+      g.addColorStop(0, "#e3f1ec"); g.addColorStop(0.55, "#d3ebe2"); g.addColorStop(0.56, "#b9ddd0"); g.addColorStop(1, "#8fc4b3");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 240, 160);
+      ctx.fillStyle = "#cdeadf"; ctx.beginPath(); ctx.ellipse(120, 104, 46, 9, 0, 0, 7); ctx.fill();
+      caixa(5, 113, 230, 44, "#6f86b6");
+      var x0 = 16, y0 = 121, alt = 16;
+    } else if (e.grupo.indexOf("botões") >= 0 || e.grupo.indexOf("explicação") >= 0) {
+      // telas azuis do guia de controles: o texto comeca depois do icone do botao
+      ctx.fillStyle = "#0b5fb5"; ctx.fillRect(0, 0, 240, 160);
+      ctx.fillStyle = "#0a4f98"; ctx.fillRect(0, 0, 240, 16);
+      ctx.fillStyle = "#fff"; ctx.fillRect(8, 5, 28, 2); ctx.fillRect(190, 5, 42, 2);
+      if (e.grupo.indexOf("botões") >= 0) {
+        ctx.fillStyle = "#e8eef8"; ctx.beginPath(); ctx.arc(30, 80, 14, 0, 7); ctx.fill();
+        var x0 = 56, y0 = 70, alt = 14;
+      } else { var x0 = 8, y0 = 62, alt = 14; }
+    } else {
+      ctx.fillStyle = "#e9f2f1"; ctx.fillRect(0, 0, 240, 160);
+      ctx.fillStyle = "#2f66b0"; ctx.fillRect(0, 0, 240, 22);
+      ctx.fillStyle = "#fff"; ctx.fillRect(196, 8, 36, 2);
+      caixa(5, 25, 230, 129, "#6f86b6");
+      var x0 = 11, y0 = 33, alt = 14;
+    }
+    let algumExcede = false;
+    linhas.forEach((ln, i) => {
+      const larg = C.larguraLinha(crua[i] !== undefined ? crua[i] : ln, dados.fonte_larguras);
+      const ruim = larg > limite || i >= maxLin;
+      if (larg > limite) algumExcede = true;
+      texto(ln, x0, y0 + i * alt, ruim ? "#d12c2c" : "#484848");
+    });
+    if (algumExcede) { ctx.fillStyle = "#d12c2c"; for (let y = 0; y < 160; y += 4) ctx.fillRect(x0 + limite, y, 1, 2); }
+    if (pagina < pags.length - 1) triangulo(oak ? 222 : 222, oak ? 146 : 142, "#d12c2c");
+    const maior = Math.max(0, ...crua.map(l => C.larguraLinha(l, dados.fonte_larguras)));
+    $("pgInfo").textContent = "Página " + (pagina + 1) + " de " + pags.length + "  •  " + linhas.length + " linha(s)  •  maior linha: " + maior + " de " + limite + " px";
+    $("bPrev").disabled = pagina <= 0; $("bNext").disabled = pagina >= pags.length - 1;
+  }
+  $("bPrev").onclick = () => { pagina--; desenhar(); };
+  $("bNext").onclick = () => { pagina++; desenhar(); };
+
+  /* ---------- pasta do CFRU ---------- */
+  const temApi = () => typeof window.showDirectoryPicker === "function";
+  async function lerTexto(dir, nome) {
+    try { const f = await (await dir.getFileHandle(nome)).getFile(); return await f.text(); } catch (_) { return null; }
+  }
+  async function existeDir(dir, nome) { try { await dir.getDirectoryHandle(nome); return true; } catch (_) { return false; } }
+  async function escrever(dir, caminho, conteudo) {
+    const partes = caminho.split("/"); let h = dir;
+    for (const p of partes.slice(0, -1)) h = await h.getDirectoryHandle(p, { create: true });
+    const fh = await h.getFileHandle(partes[partes.length - 1], { create: true });
+    const w = await fh.createWritable(); await w.write(conteudo); await w.close();
+  }
+  function mesclar(salvo) {
+    // textos salvos na pasta; larguras/grupos/idiomas vem sempre deste programa
+    let n = 0;
+    for (const e of dados.entradas) {
+      const s = (salvo.entradas || []).find(x => x.id === e.id);
+      if (s) for (const idi of dados.idiomas) if (typeof s[idi.chave] === "string") { e[idi.chave] = s[idi.chave]; n++; }
+    }
+    return n;
+  }
+  async function abrirPasta() {
+    if (!temApi()) { alert("Este navegador não deixa o site abrir pastas.\nUse o Google Chrome ou o Microsoft Edge.\n\nMesmo assim você pode editar: ao salvar, os arquivos serão baixados e você os copia para o projeto."); return; }
+    let h;
+    try { h = await window.showDirectoryPicker({ mode: "readwrite" }); } catch (_) { return; }
+    const okSrc = await existeDir(h, "src"), okStr = await existeDir(h, "strings");
+    if (!okSrc || !okStr) {
+      if (!confirm("Esta pasta não parece ser a do projeto CFRU (não achei as pastas “src” e “strings”).\nUsar mesmo assim?")) return;
+    }
+    pasta = h;
+    const partes = ["src " + (okSrc ? "✔" : "✖"), "strings " + (okStr ? "✔" : "✖")];
+    const cm = await lerTexto(h, "charmap.tbl");
+    if (cm) { suportados = C.suportadosDoCharmap(cm); partes.push("charmap ✔"); } else { suportados = C.CARACTERES_PADRAO; partes.push("charmap (padrão)"); }
+    const js = await lerTexto(h, "intro_texts.json");
+    if (js) {
+      try { const n = mesclar(JSON.parse(js)); partes.push("textos salvos carregados ✔"); }
+      catch (_) { partes.push("intro_texts.json ilegível"); }
+    }
+    $("status").textContent = "📂 " + h.name + "  (" + partes.join(", ") + ")";
+    renderTudo();
+    toast("Pasta aberta: " + h.name);
+  }
+  $("bAbrir").onclick = abrirPasta;
+
+  /* ---------- salvar / exportar ---------- */
+  function perguntar(titulo, html, botoes) {
+    return new Promise(res => {
+      $("dT").textContent = titulo; $("dB").innerHTML = html;
+      const bt = $("dBt"); bt.innerHTML = "";
+      botoes.forEach(b => { const x = document.createElement("button"); x.textContent = b.t; if (b.pri) x.className = "pri"; x.onclick = () => { $("dlg").close(); res(b.v); }; bt.appendChild(x); });
+      $("dlg").onclose = () => res(null);
+      $("dlg").showModal();
+    });
+  }
+  const esc = s => s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  function problemas() {
+    const erros = [], avisos = [];
+    for (const e of dados.entradas) for (const idi of dados.idiomas) {
+      const r = C.analisar(e, idi.chave, suportados, trocarTil(), dados);
+      r.erros.forEach(x => erros.push(e.nota + " [" + idi.chave.toUpperCase() + "]: " + x.msg));
+      if (r.avisos.some(a => a.tipo !== "til")) avisos.push({ e, k: idi.chave, txt: e.nota + " [" + idi.chave.toUpperCase() + "]" });
+    }
+    return { erros, avisos };
+  }
+  function baixar(nome, conteudo) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([conteudo], { type: "text/plain;charset=utf-8" }));
+    a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+  }
+  async function salvar() {
+    dados.trocar_til_se_nao_existir = trocarTil();
+    let p = problemas();
+    if (p.erros.length) {
+      await perguntar("Há caracteres que o jogo não tem", "<pre>" + esc(p.erros.join("\n")) + "</pre><p>Troque esses caracteres e salve de novo.</p>", [{ t: "Entendi", v: 0, pri: true }]);
+      return;
+    }
+    if (p.avisos.length) {
+      const r = await perguntar("Alguns textos não cabem na tela do jogo",
+        "<p>Estes textos têm linha larga demais ou linhas demais por página:</p><pre>" + esc(p.avisos.map(a => a.txt).join("\n")) + "</pre><p>Posso adaptar automaticamente só esses textos antes de salvar.</p>",
+        [{ t: "Adaptar e salvar", v: "adaptar", pri: true }, { t: "Salvar assim mesmo", v: "assim" }, { t: "Cancelar", v: null }]);
+      if (!r) return;
+      if (r === "adaptar") {
+        for (const a of p.avisos) { const h = a.e.id + "|" + a.k; (hist[h] = hist[h] || []).push(a.e[a.k]); a.e[a.k] = C.formatar(a.e[a.k], a.e, dados); }
+        renderTudo();
+      }
+    }
+    let g;
+    try { g = C.gerar(dados, suportados, "editor_textos_intro.html"); } catch (err) { alert(err.message); return; }
+    const json = JSON.stringify(dados, null, 1);
+    try {
+      if (pasta) {
+        await escrever(pasta, "strings/intro_texts.string", g.string);
+        await escrever(pasta, "src/intro_texts_table.h", g.header);
+        await escrever(pasta, "intro_texts.json", json);
+        await perguntar("Pronto! Arquivos exportados", "<p>Gravei na pasta <b>" + esc(pasta.name) + "</b>:</p><pre>strings/intro_texts.string\nsrc/intro_texts_table.h\nintro_texts.json  (seus textos, para reabrir depois)</pre><p>Agora é só compilar o projeto de novo.</p>", [{ t: "OK", v: 1, pri: true }]);
+      } else {
+        baixar("intro_texts.string", g.string); baixar("intro_texts_table.h", g.header); baixar("intro_texts.json", json);
+        await perguntar("Arquivos baixados", "<p>Sem pasta aberta, baixei 3 arquivos. Copie para o projeto:</p><pre>intro_texts.string  →  strings/\nintro_texts_table.h →  src/\nintro_texts.json    →  raiz do projeto (opcional)</pre><p>Dica: com <b>Abrir pasta do CFRU</b> (Chrome/Edge) isso é feito sozinho.</p>", [{ t: "OK", v: 1, pri: true }]);
+      }
+    } catch (err) {
+      alert("Não consegui gravar: " + err.message + "\nVerifique se a pasta não está protegida.");
+    }
+  }
+  $("bSalvar").onclick = salvar;
+
+  window.__editor = { get dados() { return dados; }, salvar, abrirPasta, adaptar, get suportados() { return suportados; } }; // para testes
+  renderTudo();
+})();
+</script>
+</body>
+</html>

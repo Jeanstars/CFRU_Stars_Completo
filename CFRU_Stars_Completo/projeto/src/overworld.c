@@ -3359,7 +3359,13 @@ void CB2_WhiteOut(void)
     u8 val;
 	if (FlagGet(FLAG_NUZLOCKE))
 		{
-			ClearSaveData();
+			{
+				extern u8 LanguageSelect_GetSavedLanguage(void);
+				extern void LanguageSelect_SetSavedLanguage(u8);
+				u8 language = LanguageSelect_GetSavedLanguage(); //O idioma escolhido nao se perde no reinicio do Nuzlocke
+				ClearSaveData();
+				LanguageSelect_SetSavedLanguage(language);
+			}
 			CB2_NewGameOld();
 		}
     if (++gMain.state >= 120)
