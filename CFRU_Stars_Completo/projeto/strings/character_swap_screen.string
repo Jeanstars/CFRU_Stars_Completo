@@ -1,0 +1,180 @@
+// Tela de selecao de personagem da troca (Character Swap)
+// Mesmo padrao do character_swap.string: texto base = Portugues (flag 0x260), _EN = English (0x261), _ES = Espanol latino (0x262)
+// Portugues sem acentos (igual aos seus outros textos). [BUFFER1] = nome do personagem.
+
+// ---------------- Portugues ----------------
+
+#org @gText_CswUi_Title
+TROCA DE PERSONAGEM ATIVA!
+
+#org @gText_CswUi_Ready1
+Pronto para trocar?
+
+#org @gText_CswUi_Ready2
+[BUFFER1] esta disponivel!
+
+#org @gText_CswUi_New1
+Uma nova aventura!
+
+#org @gText_CswUi_New2
+Comecar com novo treinador?
+
+#org @gText_CswUi_Active1
+[BUFFER1] ja esta em uso.
+
+#org @gText_CswUi_Active2
+Escolha o outro personagem.
+
+#org @gText_CswUi_StatusActive
+EM USO
+
+#org @gText_CswUi_StatusAvailable
+DISPONIVEL
+
+#org @gText_CswUi_StatusNew
+NOVO
+
+#org @gText_CswUi_HintLeft
+[L_BUTTON]: INFO · [B_BUTTON]: VOLTAR
+
+#org @gText_CswUi_HintRight
+[A_BUTTON]: TROCAR!
+
+#org @gText_CswUi_InfoLocation
+Local: 
+
+#org @gText_CswUi_InfoMoney
+Dinheiro: 
+
+#org @gText_CswUi_InfoBadges
+Insignias: 
+
+#org @gText_CswUi_InfoDex
+Pokedex: 
+
+#org @gText_CswUi_InfoParty
+Equipe: 
+
+#org @gText_CswUi_InfoNoData1
+Sem dados ainda.
+
+#org @gText_CswUi_InfoNoData2
+Comeca uma nova aventura.
+
+// ---------------- English (flag 0x261) ----------------
+
+#org @gText_CswUi_Title_EN
+CHARACTER SWAP ACTIVE!
+
+#org @gText_CswUi_Ready1_EN
+Ready to switch partners?
+
+#org @gText_CswUi_Ready2_EN
+[BUFFER1] is now available!
+
+#org @gText_CswUi_New1_EN
+A new adventure awaits!
+
+#org @gText_CswUi_New2_EN
+Start with a new trainer?
+
+#org @gText_CswUi_Active1_EN
+[BUFFER1] is already active.
+
+#org @gText_CswUi_Active2_EN
+Pick the other character.
+
+#org @gText_CswUi_StatusActive_EN
+ACTIVE
+
+#org @gText_CswUi_StatusAvailable_EN
+AVAILABLE
+
+#org @gText_CswUi_StatusNew_EN
+NEW
+
+#org @gText_CswUi_HintLeft_EN
+[L_BUTTON]: INFO · [B_BUTTON]: BACK
+
+#org @gText_CswUi_HintRight_EN
+[A_BUTTON]: SWITCH!
+
+#org @gText_CswUi_InfoLocation_EN
+Location: 
+
+#org @gText_CswUi_InfoMoney_EN
+Money: 
+
+#org @gText_CswUi_InfoBadges_EN
+Badges: 
+
+#org @gText_CswUi_InfoDex_EN
+Pokédex: 
+
+#org @gText_CswUi_InfoParty_EN
+Party: 
+
+#org @gText_CswUi_InfoNoData1_EN
+No data yet.
+
+#org @gText_CswUi_InfoNoData2_EN
+Starts a new adventure.
+
+// ---------------- Espanol latino (flag 0x262) ----------------
+
+#org @gText_CswUi_Title_ES
+¡CAMBIO DE PERSONAJE ACTIVO!
+
+#org @gText_CswUi_Ready1_ES
+¿Listo para cambiar?
+
+#org @gText_CswUi_Ready2_ES
+¡[BUFFER1] está disponible!
+
+#org @gText_CswUi_New1_ES
+¡Una nueva aventura!
+
+#org @gText_CswUi_New2_ES
+¿Empezar con otro entrenador?
+
+#org @gText_CswUi_Active1_ES
+[BUFFER1] ya está en uso.
+
+#org @gText_CswUi_Active2_ES
+Elige al otro personaje.
+
+#org @gText_CswUi_StatusActive_ES
+EN USO
+
+#org @gText_CswUi_StatusAvailable_ES
+DISPONIBLE
+
+#org @gText_CswUi_StatusNew_ES
+NUEVO
+
+#org @gText_CswUi_HintLeft_ES
+[L_BUTTON]: INFO · [B_BUTTON]: VOLVER
+
+#org @gText_CswUi_HintRight_ES
+[A_BUTTON]: ¡CAMBIAR!
+
+#org @gText_CswUi_InfoLocation_ES
+Lugar: 
+
+#org @gText_CswUi_InfoMoney_ES
+Dinero: 
+
+#org @gText_CswUi_InfoBadges_ES
+Medallas: 
+
+#org @gText_CswUi_InfoDex_ES
+Pokédex: 
+
+#org @gText_CswUi_InfoParty_ES
+Equipo: 
+
+#org @gText_CswUi_InfoNoData1_ES
+Sin datos todavía.
+
+#org @gText_CswUi_InfoNoData2_ES
+Empieza una nueva aventura.

@@ -20,6 +20,7 @@
 #include "../include/new/item_tables.h"
 #include "../include/new/pokemon_storage_system.h"
 #include "../include/new/roamer.h"
+#include "../include/new/character_swap_screen.h"
 
 /*
 character_swap.c
@@ -223,6 +224,7 @@ enum
 {
 	MODE_SWAP, //Live <-> Stored
 	MODE_SAVE, //Live -> Stored
+	MODE_PEEK, //Stored -> small buffers (read-only: changes nothing). Used by the character selection screen.
 };
 
 enum
@@ -233,16 +235,28 @@ enum
 	CHAR_SWAP_CANT_DISABLED,
 };
 
+//MODE_PEEK: "copy bytes [offset, offset + length) of the block whose live address is 'live' into 'dest'".
+//The list ends with live == NULL. It is passed by pointer (this build has no writable globals).
+struct PeekRequest
+{
+	const void* live;
+	u16 offset;
+	u16 length;
+	u8* dest;
+};
+
 struct StorageStream
 {
 	u8 box;
 	u16 offset;
+	const struct PeekRequest* peek; //Only used by MODE_PEEK
 };
 
 //This file's functions:
 static u8* StreamNextByte(struct StorageStream* s);
 static void ProcessBlock(struct StorageStream* s, void* live, u32 size, u8 mode);
-static void ProcessAllData(u8 mode, u32* dayStamp, u8* facing);
+static void ProcessAllData(u8 mode, u32* dayStamp, u8* facing, const struct PeekRequest* peek);
+static void PeekBlock(struct StorageStream* s, const void* live, u32 size);
 static void SwapMemory(u8* a, u8* b, u32 size);
 static void SwapPCBoxes(void);
 static void ClearInactivePCBoxes(void);
@@ -268,9 +282,30 @@ static u8* StreamNextByte(struct StorageStream* s)
 	return ((u8*) sPokemonBoxPtrs[s->box]) + s->offset++;
 }
 
+//Reads one block of the stream without touching the live data or the stored data
+static void PeekBlock(struct StorageStream* s, const void* live, u32 size)
+{
+	for (u32 i = 0; i < size; ++i)
+	{
+		u8 value = *StreamNextByte(s);
+
+		for (const struct PeekRequest* req = s->peek; req != NULL && req->live != NULL; ++req)
+		{
+			if (req->live == live && i >= req->offset && i < (u32) req->offset + req->length)
+				req->dest[i - req->offset] = value;
+		}
+	}
+}
+
 static void ProcessBlock(struct StorageStream* s, void* live, u32 size, u8 mode)
 {
 	u8* p = (u8*) live;
+
+	if (mode == MODE_PEEK)
+	{
+		PeekBlock(s, live, size);
+		return;
+	}
 
 	while (size-- > 0)
 	{
@@ -292,11 +327,12 @@ static void ProcessBlock(struct StorageStream* s, void* live, u32 size, u8 mode)
 #define DATA(ptr, size) ProcessBlock(&s, (void*) (ptr), (size), mode)
 
 //Every piece of data that belongs to one character. Total must fit in NUM_STORAGE_BOXES * BOX_BYTES.
-static void ProcessAllData(u8 mode, u32* dayStamp, u8* facing)
+static void ProcessAllData(u8 mode, u32* dayStamp, u8* facing, const struct PeekRequest* peek)
 {
 	struct StorageStream s;
 	s.box = FIRST_STORAGE_BOX;
 	s.offset = sizeof(u32); //Skip the magic number
+	s.peek = peek;
 
 	//Identity
 	DATA(gSaveBlock2->playerName, sizeof(gSaveBlock2->playerName));
@@ -643,7 +679,7 @@ void CharSwap_SwapAndWarp(void)
 	//Everything else
 	if (firstTime)
 	{
-		ProcessAllData(MODE_SAVE, &dayStamp, &facing); //Current character goes to storage
+		ProcessAllData(MODE_SAVE, &dayStamp, &facing, NULL); //Current character goes to storage
 		*GetStorageMagicPtr() = CHAR_SWAP_MAGIC;
 		facing = DIR_SOUTH;
 		#ifdef CHAR_SWAP_TRADE_BOX
@@ -654,7 +690,7 @@ void CharSwap_SwapAndWarp(void)
 	}
 	else
 	{
-		ProcessAllData(MODE_SWAP, &dayStamp, &facing);
+		ProcessAllData(MODE_SWAP, &dayStamp, &facing, NULL);
 		gSaveBlock2->playerGender ^= 1;
 	}
 
@@ -707,6 +743,49 @@ void CharSwap_SwapAndWarp(void)
 	if (facing < DIR_SOUTH || facing > DIR_EAST)
 		facing = DIR_SOUTH;
 	SetInitialPlayerAvatarStateWithDirection(facing);
+}
+
+/* ------------- Read-only view of the stored (inactive) character ------------- */
+
+//TRUE if the other character was never used (nothing is stored yet)
+bool8 CharSwap_IsOtherCharacterNew(void)
+{
+	return *GetStorageMagicPtr() != CHAR_SWAP_MAGIC;
+}
+
+#define CHAR_SWAP_BADGE_FLAGS_OFFSET (FLAG_BADGE01_GET / 8)
+_Static_assert(FLAG_BADGE01_GET % 8 == 0 && CHAR_SWAP_BADGE_FLAGS_OFFSET < SB1_FLAGS_SIZE, "Character Swap: the 8 badge flags must be one byte of the vanilla flags");
+_Static_assert(VAR_PLAYER_WALKRUN >= 0x5000 && VAR_PLAYER_WALKRUN < 0x5000 + EXPANDED_VARS_SIZE / 2, "Character Swap: VAR_PLAYER_WALKRUN must be an expanded var");
+
+//Fills 'out' with a few fields of the stored character (name, money, location, badges, Pokedex...).
+//Reads through the same ProcessAllData sequence the swap uses, so the offsets can never get out of sync.
+//Nothing is written to the live data or to the storage. Returns FALSE (and out->exists = FALSE) if nothing is stored.
+bool8 CharSwap_PeekOtherCharacter(struct CharSwapPeek* out)
+{
+	u32 dayStamp = 0;
+	u8 facing = 0;
+	struct PeekRequest requests[] =
+	{
+		{gSaveBlock2->playerName,        0, sizeof(gSaveBlock2->playerName), out->name},
+		{&gPlayerPartyCount,             0, sizeof(u8),                      &out->partyCount},
+		{&gSaveBlock1->money,            0, sizeof(u32),                     (u8*) &out->moneyRaw},
+		{&gSaveBlock1->location,         0, sizeof(struct WarpData),         (u8*) &out->location},
+		{SB1_FLAGS,                      CHAR_SWAP_BADGE_FLAGS_OFFSET, 1,    &out->badgeFlags},
+		{gExpandedVars,                  (VAR_PLAYER_WALKRUN - 0x5000) * sizeof(u16), sizeof(u16), (u8*) &out->walkSpriteVar},
+		#ifdef CHAR_SWAP_SEPARATE_POKEDEX
+		{gSaveBlock1->dexCaughtFlags,    0, sizeof(gSaveBlock1->dexCaughtFlags), out->dexCaughtFlags},
+		#endif
+		{NULL, 0, 0, NULL}, //End of the list
+	};
+
+	Memset(out, 0, sizeof(struct CharSwapPeek));
+	if (CharSwap_IsOtherCharacterNew())
+		return FALSE;
+
+	ProcessAllData(MODE_PEEK, &dayStamp, &facing, requests);
+	out->name[PLAYER_NAME_LENGTH] = EOS;
+	out->exists = TRUE;
+	return TRUE;
 }
 
 /* ------------------------------ Hooks ------------------------------ */

@@ -39,9 +39,15 @@ SystemScript_CharacterSwap:
 	if equal _goto SystemScript_CharacterSwap_CantSurfing
 	compare LASTRESULT 0x3
 	if equal _goto SystemScript_CharacterSwap_CantNow
-	langmsgbox gText_CharSwap_Ask MSG_YESNO
+	@ Character selection screen (src/character_swap_screen.c). LASTRESULT: 1 = switch, 0 = cancel.
+	@ To go back to the old YES/NO question, remove these 4 lines and restore the 3 commented ones below.
+	callasm CharSwap_OpenSwapScreen
+	waitstate
 	compare LASTRESULT 0x0
 	if equal _goto SystemScript_CharacterSwap_End
+	@ langmsgbox gText_CharSwap_Ask MSG_YESNO
+	@ compare LASTRESULT 0x0
+	@ if equal _goto SystemScript_CharacterSwap_End
 	closeonkeypress
 	sound 0x6E @ SE_FLUTE
 	checksound

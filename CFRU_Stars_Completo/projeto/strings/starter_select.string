@@ -1,0 +1,38 @@
+#org @gText_StarterSelect_Msg1
+CHOOSE YOUR PARTNER,
+
+#org @gText_StarterSelect_Msg2
+TRAINER!
+
+#org @gText_StarterSelect_Hint
+[DPAD_LEFT_RIGHT] MOVE   [A_BUTTON] OK
+
+#org @gText_StarterSelect_ConfirmMsg1
+CHOOSE THIS
+
+#org @gText_StarterSelect_ConfirmMsg2
+PARTNER?
+
+#org @gText_StarterSelect_ConfirmKeys
+[A_BUTTON] YES   [B_BUTTON] NO
+
+#org @gText_StarterSelect_Lv
+LV. 
+
+#org @gText_StarterSelect_Type
+TYPE: 
+
+#org @gText_StarterSelect_Ability
+ABILITY: 
+
+#org @gText_StarterSelect_Nature
+NATURE: 
+
+#org @gText_StarterSelect_Ivs
+IVS: 
+
+#org @gText_StarterSelect_IvsPerfect
+PERFECT
+
+#org @gText_StarterSelect_Slash
+/
